@@ -246,11 +246,26 @@ function calcStats(grid,policies){
 function totalSc(s){return Math.round(s.pop*0.3+s.food*0.3+s.happy*0.5+s.env*0.4);}
 function calcRw(ts){return Math.max(2,Math.round(ts*0.15));}
 function cIP(e){return Math.round(e*0.3);}
+function countTerrain(grid){const ct={};for(const k of TK)ct[k]=0;for(const r of grid)for(const c of r){if(c.t)ct[c.t]=(ct[c.t]||0)+1;}return ct;}
+function allTerrainMin(grid,min){const ct=countTerrain(grid);return TK.every(k=>ct[k]>=min);}
+function getAdjCells(g,r,c){const R=g.length,C=g[0].length,o=[];for(const[dr,dc]of[[-1,0],[1,0],[0,-1],[0,1]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<R&&nc>=0&&nc<C)o.push(g[nr][nc]);}return o;}
 
 function canBuild(b,g,r,c,policies){
-  const cl=g[r][c];if(cl.t!=="plain")return{ok:false,r:"平野にしか建てられないよ"};
+  const cl=g[r][c];
+  if(b.id==="field0"){
+    if(cl.t!=="forest")return{ok:false,r:"森のマスにしか置けないよ"};
+  }else{
+    if(cl.t!=="plain")return{ok:false,r:"平野にしか建てられないよ"};
+  }
   if(cl.b)return{ok:false,r:"もう建物があるよ"};
-  const a=getAdj(g,r,c);for(const n of b.needs){if(!a.includes(n))return{ok:false,r:`${TER[n].label}のとなりに建てよう！`};}
+  if(b.id==="ricefield"){
+    const a=getAdj(g,r,c);const ac=getAdjCells(g,r,c);
+    const hasRiver=a.includes("river");
+    const hasRicefield=ac.some(cell=>cell.b==="ricefield");
+    if(!hasRiver&&!hasRicefield)return{ok:false,r:"川か田んぼのとなりに置こう！"};
+  }else{
+    const a=getAdj(g,r,c);for(const n of b.needs){if(!a.includes(n))return{ok:false,r:`${TER[n].label}のとなりに建てよう！`};}
+  }
   return{ok:true};
 }
 
@@ -381,12 +396,13 @@ function App(){
 
   const sn=(m)=>{setNtf(m);if(nt.current)clearTimeout(nt.current);nt.current=setTimeout(()=>setNtf(null),4000);};
 
-  // Genesis env check (era 0, env only condition)
+  // Genesis env check (era 0, env + terrain count condition)
+  const terrainOk=allTerrainMin(grid,3);
   useEffect(()=>{
     if(scr!=="game"||era!==0||!cc||showGenesisClear)return;
     const envCond=cc.co.find(co=>co.k==="env");
-    if(envCond&&envSc>=envCond.t){setShowGenesisClear(true);}
-  },[envSc,scr,era,showGenesisClear]);
+    if(envCond&&envSc>=envCond.t&&terrainOk){setShowGenesisClear(true);}
+  },[envSc,scr,era,showGenesisClear,terrainOk]);
 
   // Condition check (era 1+)
   useEffect(()=>{
@@ -645,18 +661,26 @@ function App(){
       {/* GENESIS ENV BAR */}
       {isGenesis&&cc&&(()=>{
         const envCond=cc.co.find(co=>co.k==="env");if(!envCond)return null;
-        const pct=Math.min(100,Math.round(envSc/envCond.t*100));const met=envSc>=envCond.t;
+        const pct=Math.min(100,Math.round(envSc/envCond.t*100));const envMet=envSc>=envCond.t;
+        const tCt=countTerrain(grid);const tOk=terrainOk;const allMet=envMet&&tOk;
         return(
-          <div className="mw" style={{margin:"0 auto 10px",background:met?"linear-gradient(135deg,rgba(46,125,50,0.3),rgba(27,94,32,0.2))":"linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",borderRadius:16,padding:"16px 20px",border:met?"2px solid rgba(76,175,80,0.5)":"2px solid rgba(255,255,255,0.1)",transition:"all 0.5s"}}>
+          <div className="mw" style={{margin:"0 auto 10px",background:allMet?"linear-gradient(135deg,rgba(46,125,50,0.3),rgba(27,94,32,0.2))":"linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",borderRadius:16,padding:"16px 20px",border:allMet?"2px solid rgba(76,175,80,0.5)":"2px solid rgba(255,255,255,0.1)",transition:"all 0.5s"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
               <span style={{fontSize:14,fontWeight:800,color:"#fff"}}>🌍 地形のバランスをとろう</span>
-              <span style={{fontSize:13,fontWeight:900,color:met?"#69f0ae":"#ffb74d"}}>{envSc} / {envCond.t}</span>
+              <span style={{fontSize:13,fontWeight:900,color:envMet?"#69f0ae":"#ffb74d"}}>{envSc} / {envCond.t}</span>
             </div>
             <div style={{height:12,borderRadius:6,background:"rgba(0,0,0,0.3)",overflow:"hidden",border:"1px solid rgba(255,255,255,0.05)"}}>
-              <div style={{height:"100%",width:`${pct}%`,background:met?"linear-gradient(90deg,#66bb6a,#43a047)":"linear-gradient(90deg,#ffa726,#ff9800)",borderRadius:6,transition:"width 0.4s ease, background 0.4s",boxShadow:met?"0 0 12px rgba(76,175,80,0.4)":"none"}}/>
+              <div style={{height:"100%",width:`${pct}%`,background:envMet?"linear-gradient(90deg,#66bb6a,#43a047)":"linear-gradient(90deg,#ffa726,#ff9800)",borderRadius:6,transition:"width 0.4s ease, background 0.4s",boxShadow:envMet?"0 0 12px rgba(76,175,80,0.4)":"none"}}/>
+            </div>
+            <div style={{display:"flex",gap:4,justifyContent:"center",flexWrap:"wrap",marginTop:8}}>
+              {TK.map(k=>{const n=tCt[k]||0;const ok=n>=3;return(
+                <span key={k} style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:8,background:ok?"rgba(76,175,80,0.2)":"rgba(255,255,255,0.06)",color:ok?"#69f0ae":"rgba(255,255,255,0.5)",border:ok?"1px solid rgba(76,175,80,0.3)":"1px solid rgba(255,255,255,0.1)"}}>
+                  {TER[k].emoji}{TER[k].label} {n}/3 {ok?"✅":""}
+                </span>
+              );})}
             </div>
             <div style={{textAlign:"center",marginTop:6,fontSize:11,color:"rgba(255,255,255,0.45)",fontWeight:600}}>
-              {met?"✅ 条件クリア！ポップアップを確認しよう":pct>=70?`あとすこし！（残り${envCond.t-envSc}）`:"5種類の地形をバランスよくおこう"}
+              {allMet?"✅ 条件クリア！ポップアップを確認しよう":!tOk?"すべての地形を3マス以上おこう":pct>=70?`あとすこし！（残り${envCond.t-envSc}）`:"5種類の地形をバランスよくおこう"}
             </div>
           </div>
         );
