@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>文明ビルダー - 探究教室TRAIL</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:#0d1f10;overflow-x:hidden;-webkit-text-size-adjust:100%;}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{height:6px;}::-webkit-scrollbar-track{background:rgba(255,255,255,0.05);border-radius:3px;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:3px;}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+@keyframes popIn{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+@keyframes altFloat{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-40px) scale(1.2)}100%{opacity:0;transform:translateY(-70px) scale(0.8)}}
+@keyframes starPop{0%{transform:scale(0)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.mw{max-width:620px;margin-left:auto;margin-right:auto;}
+.grid-wrap{max-width:520px;margin-left:auto;margin-right:auto;}
+@media(min-width:700px){
+  .mw{max-width:720px;}
+  .grid-wrap{max-width:620px;}
+  .tb-title{font-size:36px!important;letter-spacing:8px!important;}
+  .tb-icon-big{font-size:60px!important;}
+  .tb-sub{font-size:14px!important;}
+  .tb-desc{font-size:14px!important;}
+  .tb-diff-btn{padding:18px 24px!important;font-size:17px!important;border-radius:16px!important;}
+  .tb-diff-icon{font-size:26px!important;}
+  .tb-diff-sub{font-size:12px!important;}
+  .tb-stat{padding:8px 14px!important;min-width:85px!important;border-radius:12px!important;}
+  .tb-stat-icon{font-size:18px!important;}
+  .tb-stat-label{font-size:10px!important;}
+  .tb-stat-val{font-size:16px!important;}
+  .tb-era-name{font-size:15px!important;}
+  .tb-era-badge{font-size:12px!important;}
+  .tb-bar-h{height:9px!important;}
+  .tb-bar-icon{margin-top:4px!important;}
+  .tb-phase-btn{padding:12px 10px!important;font-size:14px!important;border-radius:12px!important;}
+  .tb-palette-wrap{padding:10px!important;border-radius:14px!important;min-height:56px!important;}
+  .tb-ter-btn{padding:8px 14px!important;font-size:14px!important;border-radius:12px!important;}
+  .tb-ter-swatch{width:18px!important;height:18px!important;}
+  .tb-bld-btn{padding:7px 12px!important;border-radius:12px!important;}
+  .tb-bld-emoji{font-size:20px!important;}
+  .tb-bld-name{font-size:12px!important;}
+  .tb-bld-cost{font-size:10px!important;}
+  .tb-cell-emoji{font-size:22px!important;}
+  .tb-cell-bld{font-size:28px!important;}
+  .tb-cell{border-radius:8px!important;}
+  .tb-grid{gap:3px!important;}
+  .tb-lv{font-size:8px!important;}
+  .tb-bonus{font-size:8px!important;}
+  .tb-plus{font-size:14px!important;}
+  .tb-help{font-size:12px!important;}
+  .tb-notif{font-size:15px!important;padding:12px 28px!important;border-radius:16px!important;}
+  .tb-report-btn{padding:10px 32px!important;font-size:15px!important;border-radius:12px!important;}
+  .tb-tip{padding:10px 18px!important;font-size:14px!important;border-radius:12px!important;}
+  .tb-tip-emoji{font-size:32px!important;}
+  .tb-tip-name{font-size:15px!important;}
+  .tb-tip-stat{font-size:12px!important;}
+  .tb-modal{padding:28px!important;border-radius:24px!important;}
+  .tb-modal-title{font-size:18px!important;}
+  .tb-modal-icon{font-size:42px!important;}
+  .tb-cond{padding:10px 14px!important;border-radius:10px!important;}
+  .tb-cond-label{font-size:15px!important;}
+  .tb-cond-val{font-size:14px!important;}
+  .tb-cond-check{font-size:18px!important;}
+  .tb-alt-badge{padding:10px 20px!important;border-radius:16px!important;}
+  .tb-alt-coin{font-size:22px!important;}
+  .tb-alt-num{font-size:22px!important;}
+  .tb-alt-unit{font-size:12px!important;}
+  .tb-eraup-icon{font-size:64px!important;}
+  .tb-eraup-name{font-size:26px!important;}
+  .tb-nav-btn{padding:7px 18px!important;font-size:14px!important;}
+  .tb-policy-card{padding:16px 18px!important;border-radius:16px!important;}
+  .tb-policy-emoji{font-size:34px!important;}
+  .tb-policy-name{font-size:16px!important;}
+  .tb-policy-desc{font-size:13px!important;}
+  .tb-policy-active{font-size:11px!important;padding:3px 10px!important;}
+  .tb-brief-env{font-size:30px!important;}
+  .tb-brief-hint{font-size:14px!important;}
+  .tb-brief-go{padding:16px!important;font-size:18px!important;border-radius:16px!important;}
+  .tb-line-section{padding:24px 28px!important;border-radius:20px!important;max-width:500px!important;}
+  .tb-line-title{font-size:16px!important;}
+  .tb-line-input{padding:12px 16px!important;font-size:16px!important;border-radius:12px!important;}
+  .tb-line-btn{padding:14px!important;font-size:16px!important;border-radius:12px!important;}
+  .tb-result-alt{font-size:38px!important;}
+}
+@media(min-width:1024px){
+  .mw{max-width:840px;}
+  .grid-wrap{max-width:720px;}
+  .tb-cell-emoji{font-size:26px!important;}
+  .tb-cell-bld{font-size:34px!important;}
+  .tb-grid{gap:4px!important;}
+  .tb-cell{border-radius:10px!important;}
+  .tb-stat{min-width:100px!important;}
+  .tb-stat-val{font-size:18px!important;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useCallback,useEffect,useRef}=React;
+
+// ═══════════ DATA ═══════════
+const DIFF={
+  easy:{label:"かんたん",icon:"😊",cols:5,rows:5,desc:"5×5マス",color:"#66bb6a"},
+  normal:{label:"ふつう",icon:"🙂",cols:7,rows:7,desc:"7×7マス",color:"#ffa726"},
+  hard:{label:"むずかしい",icon:"😤",cols:9,rows:9,desc:"9×9マス",color:"#ef5350"},
+};
+const TER={
+  mountain:{emoji:"⛰️",label:"山",color:"#7a6b5a"},
+  river:{emoji:"💧",label:"川",color:"#4aa3df"},
+  plain:{emoji:"",label:"平野",color:"#8bc34a"},
+  sea:{emoji:"🌊",label:"海",color:"#1976d2"},
+  forest:{emoji:"🌲",label:"森",color:"#4a7c3f"},
+};
+const TK=Object.keys(TER);
+const ERAS=[
+  {id:0,name:"創成期",color:"#2e7d32",icon:"🌍"},
+  {id:1,name:"石器時代",color:"#a0845c",icon:"🪨"},
+  {id:2,name:"弥生時代",color:"#7cb342",icon:"🌾"},
+  {id:3,name:"古代",color:"#ff8f00",icon:"🏛️"},
+  {id:4,name:"中世",color:"#5c6bc0",icon:"🏯"},
+  {id:5,name:"近代",color:"#e53935",icon:"🏙️"},
+];
+const BLD=[
+  {id:"hut",name:"たて穴住居",emoji:"🛖",era:1,cost:0,pop:5,food:0,happy:0,env:1,needs:[],desc:"最初の家"},
+  {id:"field0",name:"木の実ひろい場",emoji:"🫐",era:1,cost:0,pop:0,food:8,happy:0,env:1,needs:[],desc:"食べものをあつめる"},
+  {id:"bonfire",name:"たき火",emoji:"🔥",era:1,cost:2,pop:0,food:0,happy:5,env:0,needs:[],desc:"みんなが集まる場所"},
+  {id:"ricefield",name:"田んぼ",emoji:"🌾",era:2,cost:3,pop:0,food:20,happy:0,env:2,needs:["river"],desc:"川のちかくでお米づくり"},
+  {id:"house1",name:"くら付き家",emoji:"🏠",era:2,cost:4,pop:12,food:0,happy:0,env:2,needs:[],desc:"たくわえられる家"},
+  {id:"well",name:"井戸",emoji:"🪣",era:2,cost:3,pop:0,food:3,happy:8,env:1,needs:[],desc:"水をくめるしせつ"},
+  {id:"market",name:"いちば",emoji:"🏪",era:3,cost:6,pop:0,food:8,happy:12,env:2,needs:[],desc:"売り買いする場所"},
+  {id:"shrine",name:"神社",emoji:"⛩️",era:3,cost:8,pop:0,food:0,happy:20,env:1,needs:[],desc:"大切な場所"},
+  {id:"port",name:"港",emoji:"⛵",era:3,cost:8,pop:8,food:15,happy:3,env:3,needs:["sea"],desc:"海で交易"},
+  {id:"castle",name:"お城",emoji:"🏯",era:4,cost:12,pop:25,food:0,happy:15,env:4,needs:[],desc:"まちのシンボル"},
+  {id:"school",name:"寺子屋",emoji:"📖",era:4,cost:10,pop:0,food:0,happy:25,env:2,needs:[],desc:"学ぶ場所"},
+  {id:"warehouse",name:"そうこ",emoji:"🏗️",era:4,cost:8,pop:0,food:25,happy:0,env:3,needs:[],desc:"食料をたくわえる"},
+  {id:"factory",name:"工場",emoji:"🏭",era:5,cost:15,pop:40,food:30,happy:-8,env:8,needs:[],desc:"環境がさがる…"},
+  {id:"station",name:"えき",emoji:"🚉",era:5,cost:14,pop:30,food:0,happy:15,env:5,needs:[],desc:"人が集まる"},
+  {id:"park",name:"公園",emoji:"🌳",era:5,cost:10,pop:0,food:0,happy:30,env:-3,needs:[],desc:"環境もよくなる！"},
+];
+const LVM=[1,1.5,2.2,3],LVC=[0,4,8,14],MLV=3;
+
+// ═══════════ POLICIES ═══════════
+const POLICIES=[
+  {era:2,cards:[
+    {id:"p0a",name:"開墾",emoji:"🪓",desc:"食料+20% / 環境-5",effect:{foodMult:1.2,envFlat:-5}},
+    {id:"p0b",name:"共存",emoji:"🌱",desc:"環境+10 / ⭐+3",effect:{envFlat:10,powerFlat:3}},
+    {id:"p0c",name:"移住",emoji:"🚶",desc:"人口+15%",effect:{popMult:1.15}},
+  ]},
+  {era:3,cards:[
+    {id:"p1a",name:"灌漑",emoji:"💧",desc:"川ボーナス2倍",effect:{riverMult:2}},
+    {id:"p1b",name:"祭事",emoji:"🎆",desc:"幸福+20% / ⭐+5",effect:{happyMult:1.2,powerFlat:5}},
+    {id:"p1c",name:"交易路",emoji:"🛤️",desc:"輸出レート+50%",effect:{tradeMult:1.5}},
+  ]},
+  {era:4,cards:[
+    {id:"p2a",name:"築城",emoji:"🏰",desc:"城コスト半額",effect:{castleDiscount:0.5}},
+    {id:"p2b",name:"自然保護",emoji:"🌳",desc:"環境+15 / ⭐+8",effect:{envFlat:15,powerFlat:8}},
+    {id:"p2c",name:"市場拡大",emoji:"📈",desc:"輸出レート2倍",effect:{tradeMult:2}},
+  ]},
+  {era:5,cards:[
+    {id:"p3a",name:"工業化",emoji:"⚙️",desc:"工場コスト半額 / 環境-10",effect:{factoryDiscount:0.5,envFlat:-10}},
+    {id:"p3b",name:"学問",emoji:"📚",desc:"幸福+30%",effect:{happyMult:1.3}},
+    {id:"p3c",name:"貿易立国",emoji:"🚢",desc:"港の効果3倍",effect:{portMult:3}},
+  ]},
+];
+
+// ═══════════ ERA CONDITIONS ═══════════
+function getEC(d){
+  const C={
+    easy:[
+      {from:0,to:1,toN:"石器時代",toI:"🪨",co:[{l:"環境30以上",k:"env",t:30}]},
+      {from:1,to:2,toN:"弥生時代",toI:"🌾",co:[{l:"環境30以上",k:"env",t:30},{l:"人口10人",k:"pop",t:10},{l:"食料8",k:"food",t:8}]},
+      {from:2,to:3,toN:"古代",toI:"🏛️",co:[{l:"環境25以上",k:"env",t:25},{l:"人口40人",k:"pop",t:40},{l:"食料25",k:"food",t:25}]},
+      {from:3,to:4,toN:"中世",toI:"🏯",co:[{l:"環境18以上",k:"env",t:18},{l:"人口100人",k:"pop",t:100},{l:"幸福15",k:"happy",t:15}]},
+      {from:4,to:5,toN:"近代",toI:"🏙️",co:[{l:"環境12以上",k:"env",t:12},{l:"人口200人",k:"pop",t:200},{l:"幸福25",k:"happy",t:25}]},
+    ],
+    normal:[
+      {from:0,to:1,toN:"石器時代",toI:"🪨",co:[{l:"環境50以上",k:"env",t:50}]},
+      {from:1,to:2,toN:"弥生時代",toI:"🌾",co:[{l:"環境50以上",k:"env",t:50},{l:"人口20人",k:"pop",t:20},{l:"食料15",k:"food",t:15}]},
+      {from:2,to:3,toN:"古代",toI:"🏛️",co:[{l:"環境40以上",k:"env",t:40},{l:"人口80人",k:"pop",t:80},{l:"食料50",k:"food",t:50}]},
+      {from:3,to:4,toN:"中世",toI:"🏯",co:[{l:"環境30以上",k:"env",t:30},{l:"人口200人",k:"pop",t:200},{l:"幸福30",k:"happy",t:30}]},
+      {from:4,to:5,toN:"近代",toI:"🏙️",co:[{l:"環境20以上",k:"env",t:20},{l:"人口400人",k:"pop",t:400},{l:"幸福50",k:"happy",t:50}]},
+    ],
+    hard:[
+      {from:0,to:1,toN:"石器時代",toI:"🪨",co:[{l:"環境65以上",k:"env",t:65}]},
+      {from:1,to:2,toN:"弥生時代",toI:"🌾",co:[{l:"環境65以上",k:"env",t:65},{l:"人口35人",k:"pop",t:35},{l:"食料25",k:"food",t:25}]},
+      {from:2,to:3,toN:"古代",toI:"🏛️",co:[{l:"環境50以上",k:"env",t:50},{l:"人口140人",k:"pop",t:140},{l:"食料90",k:"food",t:90}]},
+      {from:3,to:4,toN:"中世",toI:"🏯",co:[{l:"環境40以上",k:"env",t:40},{l:"人口360人",k:"pop",t:360},{l:"幸福55",k:"happy",t:55}]},
+      {from:4,to:5,toN:"近代",toI:"🏙️",co:[{l:"環境30以上",k:"env",t:30},{l:"人口700人",k:"pop",t:700},{l:"幸福90",k:"happy",t:90}]},
+    ],
+  };
+  return C[d]||C.normal;
+}
+
+// ═══════════ HELPERS ═══════════
+function mkG(r,c){return Array(r).fill(null).map(()=>Array(c).fill(null).map(()=>({t:null,b:null,lv:0})));}
+function getAdj(g,r,c){const R=g.length,C=g[0].length,o=[];for(const[dr,dc]of[[-1,0],[1,0],[0,-1],[0,1]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<R&&nc>=0&&nc<C&&g[nr][nc].t)o.push(g[nr][nc].t);}return o;}
+
+function calcEnv(grid,policies){
+  const ct={};let tot=0;
+  for(const r of grid)for(const c of r){if(c.t){ct[c.t]=(ct[c.t]||0)+1;tot++;}}
+  if(!tot)return 0;
+  const id=tot/TK.length;let bs=0;for(const k of TK){bs+=Math.max(0,1-Math.abs((ct[k]||0)-id)/id);}
+  bs=(bs/TK.length)*100;
+  const ty=TK.filter(k=>(ct[k]||0)>0).length,db=(ty/TK.length)*20;
+  let ep=0;for(const r of grid)for(const c of r){if(c.b){const b=BLD.find(x=>x.id===c.b);if(b)ep+=b.env*(c.lv+1)*0.6;}}
+  let flat=0;for(const p of policies){if(p.effect.envFlat)flat+=p.effect.envFlat;}
+  return Math.max(0,Math.min(100,Math.round(bs+db-ep+flat)));
+}
+
+function calcStats(grid,policies){
+  let pop=0,food=0,happy=0;const fl=[];
+  let pm=1,fm=1,hm=1,rm=1,sm2=1,portM=1;
+  for(const p of policies){
+    if(p.effect.popMult)pm*=p.effect.popMult;
+    if(p.effect.foodMult)fm*=p.effect.foodMult;
+    if(p.effect.happyMult)hm*=p.effect.happyMult;
+    if(p.effect.riverMult)rm=Math.max(rm,p.effect.riverMult);
+    if(p.effect.portMult)portM=Math.max(portM,p.effect.portMult);
+  }
+  for(let r=0;r<grid.length;r++)for(let c=0;c<grid[0].length;c++){
+    const cl=grid[r][c];fl.push(cl);
+    if(cl.b){const b=BLD.find(x=>x.id===cl.b);if(b){
+      const lm=LVM[cl.lv]||1,a=getAdj(grid,r,c);
+      const rb=a.includes("river")?(1+(0.4*rm)):1;
+      const sb=a.includes("sea")?1.25:1;
+      const isPort=b.id==="port";
+      let bPop=b.pop,bFood=b.food,bHappy=b.happy;
+      if(isPort){bPop*=portM;bFood*=portM;bHappy*=portM;}
+      pop+=Math.round(bPop*lm*pm);
+      food+=Math.round(bFood*lm*fm*rb*sb);
+      happy+=Math.round(bHappy*lm*hm);
+    }}
+  }
+  const env=calcEnv(grid,policies);
+  return{pop,food,happy,env,fl};
+}
+
+function totalSc(s){return Math.round(s.pop*0.3+s.food*0.3+s.happy*0.5+s.env*0.4);}
+function calcRw(ts){return Math.max(2,Math.round(ts*0.15));}
+function cIP(e){return Math.round(e*0.3);}
+
+function canBuild(b,g,r,c,policies){
+  const cl=g[r][c];if(cl.t!=="plain")return{ok:false,r:"平野にしか建てられないよ"};
+  if(cl.b)return{ok:false,r:"もう建物があるよ"};
+  const a=getAdj(g,r,c);for(const n of b.needs){if(!a.includes(n))return{ok:false,r:`${TER[n].label}のとなりに建てよう！`};}
+  return{ok:true};
+}
+
+function getBuildCost(b,policies){
+  let cost=b.cost;
+  for(const p of policies){
+    if(p.effect.castleDiscount&&b.id==="castle")cost=Math.round(cost*p.effect.castleDiscount);
+    if(p.effect.factoryDiscount&&b.id==="factory")cost=Math.round(cost*p.effect.factoryDiscount);
+  }
+  return cost;
+}
+
+function getTradeRate(policies){
+  let m=1;for(const p of policies){if(p.effect.tradeMult)m*=p.effect.tradeMult;}return m;
+}
+
+function getStarRating(env){return env>=60?3:env>=20?2:1;}
+function getStarAlt(star){return star===3?10:star===2?6:3;}
+
+// ═══════════ RANKING HELPERS ═══════════
+const RANK_WEEKLY="civ-rank-weekly";
+const RANK_ALL="civ-rank-alltime";
+const RANK_WRESET="civ-rank-wreset";
+const RANK_MAX=10;
+const MEDAL=["🥇","🥈","🥉"];
+
+function getMonday4am(){
+  const now=new Date();
+  const d=new Date(now);d.setHours(4,0,0,0);
+  const day=d.getDay();const diff=day===0?6:day-1;
+  d.setDate(d.getDate()-diff);
+  if(d>now){d.setDate(d.getDate()-7);}
+  return d.getTime();
+}
+
+async function loadRanking(key){
+  try{const r=await window.storage.get(key,true);return r?JSON.parse(r.value):[];}catch{return [];}
+}
+async function saveRanking(key,data){
+  try{await window.storage.set(key,JSON.stringify(data.slice(0,RANK_MAX)),true);}catch{}
+}
+async function checkWeeklyReset(){
+  const mon=getMonday4am();
+  try{
+    const r=await window.storage.get(RANK_WRESET,true);
+    const last=r?parseInt(r.value):0;
+    if(last<mon){await saveRanking(RANK_WEEKLY,[]);await window.storage.set(RANK_WRESET,String(mon),true);return[];}
+    return await loadRanking(RANK_WEEKLY);
+  }catch{return[];}
+}
+function insertRank(list,entry){
+  const nl=[...list,entry];nl.sort((a,b)=>b.score-a.score||(b.env-a.env));return nl.slice(0,RANK_MAX);
+}
+
+// ═══════════ RANK ROW COMPONENT ═══════════
+function RankRow({e,i,hl}){
+  const bg=hl?"rgba(0,230,118,0.12)":i%2===0?"rgba(255,255,255,0.03)":"transparent";
+  const diffInfo={easy:{icon:"😊",color:"#66bb6a"},normal:{icon:"🙂",color:"#ffa726"},hard:{icon:"😤",color:"#ef5350"}};
+  const di=diffInfo[e.diff]||diffInfo.normal;
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:bg,borderRadius:8,border:hl?"1px solid rgba(0,230,118,0.2)":"1px solid transparent"}}>
+      <span style={{width:28,textAlign:"center",fontSize:i<3?18:13,fontWeight:900,color:i<3?"#ffd740":"rgba(255,255,255,0.4)"}}>{i<3?MEDAL[i]:`${i+1}`}</span>
+      <span style={{flex:1,fontSize:13,fontWeight:700,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.name}</span>
+      <span style={{fontSize:13,fontWeight:900,color:"#69f0ae",minWidth:50,textAlign:"right"}}>{e.score}</span>
+      <span style={{fontSize:10,color:di.color,fontWeight:700,background:`${di.color}20`,borderRadius:4,padding:"1px 5px"}}>{di.icon}</span>
+      <span style={{fontSize:11,letterSpacing:1}}>{[1,2,3].map(s=>s<=e.star?"⭐":"☆").join("")}</span>
+      <span style={{fontSize:12}}>{e.eraIcon||"🏙️"}</span>
+    </div>
+  );
+}
+
+// ═══════════ MAIN APP ═══════════
+function App(){
+  const[scr,setScr]=useState("title");
+  const[df,setDf]=useState("normal");
+  const[grid,setGrid]=useState(()=>mkG(7,7));
+  const[ph,setPh]=useState("terrain");
+  const[sT,setST]=useState("plain");
+  const[sB,setSB]=useState(null);
+  const[era,setEra]=useState(0);
+  const[pw,setPw]=useState(0);
+  const[cld,setCld]=useState([]);
+  const[ntf,setNtf]=useState(null);
+  const[tip,setTip]=useState(null);
+  const[hE,setHE]=useState(false);
+  const[eU,setEU]=useState(false);
+  const[rpt,setRpt]=useState(false);
+  const[lU,setLU]=useState(null);
+  const[lk,setLk]=useState(false);
+  const[policies,setPolicies]=useState([]);
+  const[showPolicy,setShowPolicy]=useState(null);
+  const[showTrade,setShowTrade]=useState(false);
+  const[showBrief,setShowBrief]=useState(false);
+  const[alt,setAlt]=useState(0);
+  const[clearedDiffs,setClearedDiffs]=useState([]);
+  const[showResult,setShowResult]=useState(false);
+  const[resultData,setResultData]=useState(null);
+  const[lineName,setLineName]=useState("");
+  const[showLineConfirm,setShowLineConfirm]=useState(false);
+  const[showGenesisClear,setShowGenesisClear]=useState(false);
+  const[showTutorial,setShowTutorial]=useState(false);
+  const advancing=useRef(false);
+  // Ranking
+  const[rankWeekly,setRankWeekly]=useState([]);
+  const[rankAll,setRankAll]=useState([]);
+  const[showRanking,setShowRanking]=useState(false);
+  const[rankTab,setRankTab]=useState("weekly");
+  const[rankName,setRankName]=useState("");
+  const[rankRegistered,setRankRegistered]=useState(false);
+  const[myRankIdx,setMyRankIdx]=useState(-1);
+
+  // Load rankings on mount
+  useEffect(()=>{
+    (async()=>{
+      const w=await checkWeeklyReset();setRankWeekly(w);
+      const a=await loadRanking(RANK_ALL);setRankAll(a);
+    })();
+  },[]);
+
+  const nt=useRef(null),ipR=useRef(false);
+
+  const dc=DIFF[df],gC=grid[0].length,gR=grid.length;
+  const ec=getEC(df),st=calcStats(grid,policies),ts=totalSc(st);
+  const cc=ec.find(e=>e.from===era);
+  const envSc=st.env;
+  const isGenesis=era===0;
+  const MAX_ERA=5;
+
+  const sn=(m)=>{setNtf(m);if(nt.current)clearTimeout(nt.current);nt.current=setTimeout(()=>setNtf(null),4000);};
+
+  // Genesis env check (era 0, env only condition)
+  useEffect(()=>{
+    if(scr!=="game"||era!==0||!cc||showGenesisClear)return;
+    const envCond=cc.co.find(co=>co.k==="env");
+    if(envCond&&envSc>=envCond.t){setShowGenesisClear(true);}
+  },[envSc,scr,era,showGenesisClear]);
+
+  // Condition check (era 1+)
+  useEffect(()=>{
+    if(!cc||scr!=="game"||era===0||advancing.current)return;
+    let nc=[...cld],g=0;
+    for(const co of cc.co){const k=`${era}-${co.k}`;if(nc.includes(k))continue;
+      if(st[co.k]>=co.t){nc.push(k);const r=calcRw(ts);g+=r;sn(`✅「${co.l}」クリア！ ⭐+${r}`);}}
+    if(g>0){setCld(nc);setPw(p=>p+g);}
+    if(cc.co.every(co=>nc.includes(`${era}-${co.k}`))&&era<MAX_ERA){
+      advancing.current=true;
+      setTimeout(()=>{
+        const newEra=era+1;
+        setEra(newEra);
+        setEU(true);setTimeout(()=>setEU(false),3000);
+        const policySet=POLICIES.find(p=>p.era===newEra);
+        if(policySet)setTimeout(()=>setShowPolicy(newEra),500);
+        let pfb=0;for(const p of policies){if(p.effect.powerFlat)pfb+=p.effect.powerFlat;}
+        if(pfb>0)setPw(p=>p+pfb);
+        if(newEra===MAX_ERA){
+          setTimeout(()=>{
+            const star=getStarRating(envSc);
+            const starAlt=getStarAlt(star);
+            const isFirst=!clearedDiffs.includes(df);
+            const firstAlt=isFirst?5:0;
+            const totalAlt=starAlt+firstAlt;
+            setAlt(a=>a+totalAlt);
+            if(isFirst)setClearedDiffs(p=>[...p,df]);
+            setResultData({star,starAlt,firstAlt,totalAlt});
+            setRankRegistered(false);setMyRankIdx(-1);
+            if(lineName.trim())setRankName(lineName.trim());
+            setShowResult(true);
+          },3500);
+        }
+        advancing.current=false;
+      },800);
+    }
+  },[st.pop,st.food,st.happy,st.env]);
+
+  const goToStoneAge=()=>{
+    setShowGenesisClear(false);
+    const e=calcEnv(grid,[]);const p=cIP(e);
+    setPw(p);setLk(true);setEra(1);
+    setEU(true);setTimeout(()=>setEU(false),2500);
+    setTimeout(()=>setShowTutorial(true),2800);
+  };
+  const closeTutorial=()=>{setShowTutorial(false);setPh("build");setShowBrief(true);};
+
+  const go=(d)=>{const c=DIFF[d];setDf(d);setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;setScr("game");};
+  const cfm=()=>{const e=calcEnv(grid,[]);const p=cIP(e);setPw(p);setLk(true);setShowBrief(true);};
+  const startBuild=()=>{setShowBrief(false);setPh("build");};
+  const rst=()=>{const c=DIFF[df];setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;};
+
+  const clk=useCallback((r,c)=>{
+    if(ph==="terrain"&&!lk){setGrid(p=>{const n=p.map(r=>r.map(c=>({...c})));n[r][c].t=n[r][c].t===sT?null:sT;n[r][c].b=null;n[r][c].lv=0;return n;});}
+    else if(ph==="build"){
+      const cl=grid[r][c];if(cl.b){setLU({r,c});return;}if(!sB)return;
+      const b=BLD.find(x=>x.id===sB);if(!b)return;
+      const rs=canBuild(b,grid,r,c,policies);if(!rs.ok){sn(`⚠️ ${rs.r}`);return;}
+      const cost=getBuildCost(b,policies);
+      if(cost>pw){sn(`⚠️ 国力たりない（⭐${cost}必要）`);return;}
+      setGrid(p=>{const n=p.map(r=>r.map(c=>({...c})));n[r][c].b=sB;n[r][c].lv=0;return n;});
+      setPw(p=>p-cost);sn(`🏗️ ${b.name}（⭐-${cost}）`);
+    }
+  },[ph,lk,sT,sB,grid,pw,policies]);
+
+  const pnt=useCallback((r,c)=>{
+    if(ph!=="terrain"||lk)return;
+    setGrid(p=>{const n=p.map(r=>r.map(c=>({...c})));if(n[r][c].t===sT)return p;n[r][c].t=sT;n[r][c].b=null;n[r][c].lv=0;return n;});
+  },[ph,lk,sT]);
+
+  const doLv=(r,c)=>{
+    const cl=grid[r][c];if(!cl.b||cl.lv>=MLV)return;
+    const co=LVC[cl.lv+1];if(pw<co){sn(`⚠️ ⭐${co}必要`);return;}
+    setGrid(p=>{const n=p.map(r=>r.map(c=>({...c})));n[r][c].lv+=1;return n;});
+    setPw(p=>p-co);const b=BLD.find(x=>x.id===cl.b);sn(`⬆️ ${b.name}→Lv.${cl.lv+2}（⭐-${co}）`);setLU(null);
+  };
+
+  const rmv=useCallback((r,c)=>{
+    if(lk){setGrid(p=>{const n=p.map(r=>r.map(c=>({...c})));if(n[r][c].b){const b=BLD.find(x=>x.id===n[r][c].b);const rf=Math.round(getBuildCost(b,policies)*0.5);setPw(p=>p+rf);sn(`🔨 こわした（⭐+${rf}）`);n[r][c].b=null;n[r][c].lv=0;}return n;});}
+    else{setGrid(p=>{const n=p.map(r=>r.map(c=>({...c})));n[r][c]={t:null,b:null,lv:0};return n;});}
+  },[lk,policies]);
+
+  // Trade
+  const doTrade=(key)=>{
+    const cc2=ec.find(e=>e.from===era);if(!cc2)return;
+    const cond=cc2.co.find(co=>co.k===key);if(!cond)return;
+    const surplus=st[key]-cond.t;if(surplus<=0){sn("⚠️ 余剰がないよ");return;}
+    const rate=getTradeRate(policies);
+    const hasPort=grid.some(r=>r.some(c=>c.b==="port"));
+    const portBonus=hasPort?1.5:1;
+    const earned=Math.max(1,Math.round(surplus*0.1*rate*portBonus));
+    setPw(p=>p+earned);sn(`🤝 輸出！（⭐+${earned}）`);
+    setShowTrade(false);
+  };
+
+  // Policy select
+  const selectPolicy=(card)=>{
+    setPolicies(p=>[...p,card]);
+    let bonus=0;if(card.effect.powerFlat)bonus=card.effect.powerFlat;
+    if(bonus>0)setPw(p=>p+bonus);
+    sn(`📜 政策「${card.name}」を選んだ！`);
+    setShowPolicy(null);
+  };
+
+  // LINE
+  const sendLine=()=>{
+    const msg=`【文明ビルダー ALT報告】\n名前: ${lineName}\n💰 ${alt}ALT\n${ERAS[era].name}到達 / 人口${st.pop} / 環境${envSc} / 総合${ts}`;
+    const url=`https://line.me/R/oaMessage/@trail_official/?${encodeURIComponent(msg)}`;
+    window.open(url,"_blank");setAlt(0);setShowLineConfirm(false);sn("📤 LINEで報告しました！");
+  };
+
+  const registerRank=async()=>{
+    if(!rankName.trim()||!resultData)return;
+    const entry={name:rankName.trim(),score:ts,env:envSc,star:resultData.star,diff:df,eraIcon:ERAS[era].icon,time:Date.now()};
+    const nw=insertRank(rankWeekly,entry);
+    const na=insertRank(rankAll,entry);
+    await saveRanking(RANK_WEEKLY,nw);
+    await saveRanking(RANK_ALL,na);
+    setRankWeekly(nw);setRankAll(na);
+    const idx=nw.findIndex(e=>e.time===entry.time);
+    setMyRankIdx(idx);setRankRegistered(true);
+    sn(`🏆 ランキング登録！${idx>=0?`今週${idx+1}位！`:""}`);
+  };
+
+  const av=BLD.filter(b=>b.era<=era);
+  const evE=envSc>=70?"🌳":envSc>=40?"🌿":envSc>=20?"🍂":"🏜️";
+  const hpE=st.happy>=30?"😆":st.happy>=10?"😊":st.happy>=0?"😐":"😢";
+  const sm=gC>9;
+
+  // ═══════════ TITLE ═══════════
+  if(scr==="title") return(
+    <div style={{minHeight:"100vh",background:"linear-gradient(170deg,#1a2f1a 0%,#2d4a1f 30%,#1a3520 70%,#0d1f10 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden"}}>
+      {/* ALT badge */}
+      <div className="tb-alt-badge" style={{position:"fixed",top:12,right:12,zIndex:100,background:"linear-gradient(135deg,#1a1a2e,#16213e)",borderRadius:14,padding:"8px 16px",display:"flex",alignItems:"center",gap:8,border:"2px solid #00e67640",boxShadow:"0 4px 20px rgba(0,230,118,0.15)"}}>
+        <span className="tb-alt-coin" style={{fontSize:18}}>🪙</span><span className="tb-alt-num" style={{color:"#00e676",fontWeight:900,fontSize:18}}>{alt}</span><span className="tb-alt-unit" style={{color:"rgba(255,255,255,0.5)",fontSize:10,fontWeight:700}}>ALT</span>
+      </div>
+
+      <div style={{position:"absolute",inset:0,opacity:0.06,pointerEvents:"none"}}>{[...Array(30)].map((_,i)=><span key={i} style={{position:"absolute",left:`${(i*13+7)%100}%`,top:`${(i*19+3)%100}%`,fontSize:24+(i%5)*10,transform:`rotate(${i*12}deg)`}}>{["⛰️","🌊","🌾","🏠","🏯","⛩️","🚉","🌲"][i%8]}</span>)}</div>
+      <div style={{background:"rgba(255,248,235,0.96)",borderRadius:28,padding:"40px 44px",boxShadow:"0 24px 80px rgba(0,0,0,0.5)",textAlign:"center",maxWidth:480,width:"88%",border:"3px solid #8b7355"}}>
+        <div className="tb-icon-big" style={{fontSize:48,marginBottom:4}}>🏛️</div>
+        <h1 className="tb-title" style={{fontSize:30,fontWeight:900,color:"#2d3a1e",margin:"0 0 4px",letterSpacing:6}}>文明ビルダー</h1>
+        <p className="tb-sub" style={{fontSize:12,color:"#8b7355",margin:"0 0 6px",fontWeight:700,letterSpacing:2}}>～ 自然とともに文明をそだてよう ～</p>
+        <p className="tb-desc" style={{fontSize:12,color:"#6b5d3e",margin:"0 0 24px",lineHeight:1.8}}>地形をバランスよくおいて<br/>環境をまもりながら文明を発展させよう！</p>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {Object.entries(DIFF).map(([k,d])=>(<button key={k} onClick={()=>go(k)} className="tb-diff-btn" style={{padding:"14px 20px",fontSize:15,fontWeight:800,background:`linear-gradient(135deg,${d.color},${d.color}cc)`,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",boxShadow:`0 4px 16px ${d.color}55`,letterSpacing:2,display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}><span className="tb-diff-icon" style={{fontSize:22}}>{d.icon}</span><div style={{textAlign:"left"}}><div>{d.label}</div><div className="tb-diff-sub" style={{fontSize:10,fontWeight:500,opacity:0.85}}>{d.desc}</div></div></button>))}
+        </div>
+      </div>
+
+      {/* RANKING BUTTON */}
+      <button onClick={()=>{setShowRanking(true);setRankTab("weekly");(async()=>{const w=await checkWeeklyReset();setRankWeekly(w);const a=await loadRanking(RANK_ALL);setRankAll(a);})();}} style={{marginTop:16,padding:"14px 32px",fontSize:15,fontWeight:800,background:"linear-gradient(135deg,#ffd740,#ffab00)",color:"#2d3a1e",border:"none",borderRadius:14,cursor:"pointer",boxShadow:"0 4px 16px rgba(255,215,64,0.3)",letterSpacing:2,display:"flex",alignItems:"center",gap:8}}>🏆 ランキング</button>
+
+      {/* LINE REPORT */}
+      <div className="tb-line-section" style={{marginTop:30,maxWidth:420,width:"88%",background:"rgba(10,10,26,0.9)",borderRadius:18,padding:"20px 24px",border:"1px solid rgba(0,230,118,0.15)"}}>
+        <div className="tb-line-title" style={{fontSize:14,fontWeight:800,color:"#00e676",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>💰 ALTをTRAILに報告する</div>
+        <input value={lineName} onChange={e=>setLineName(e.target.value)} placeholder="なまえを入力" className="tb-line-input" style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"2px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"#fff",fontSize:14,fontWeight:600,marginBottom:10,outline:"none"}}/>
+        <button onClick={()=>setShowLineConfirm(true)} disabled={alt===0||!lineName.trim()} className="tb-line-btn" style={{width:"100%",padding:"12px",fontSize:14,fontWeight:800,background:alt>0&&lineName.trim()?"linear-gradient(135deg,#00b900,#009900)":"#333",color:alt>0&&lineName.trim()?"#fff":"#666",border:"none",borderRadius:10,cursor:alt>0&&lineName.trim()?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          💬 LINEで報告する
+        </button>
+        {alt===0&&<div style={{fontSize:10,color:"rgba(255,255,255,0.3)",textAlign:"center",marginTop:6}}>ALTを獲得するとボタンが押せるよ</div>}
+      </div>
+
+      {/* ═══ RANKING SCREEN ═══ */}
+      {showRanking&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:12}} onClick={()=>setShowRanking(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(170deg,#1a1a2e,#16213e)",borderRadius:24,padding:"24px 20px",maxWidth:440,width:"100%",maxHeight:"85vh",overflowY:"auto",border:"2px solid rgba(255,215,64,0.2)",boxShadow:"0 20px 60px rgba(0,0,0,0.8)",animation:"popIn 0.2s ease"}}>
+            <div style={{textAlign:"center",marginBottom:14}}>
+              <div style={{fontSize:36}}>🏆</div>
+              <h2 style={{fontSize:20,fontWeight:900,color:"#fff",letterSpacing:3}}>ランキング</h2>
+            </div>
+            <div style={{display:"flex",gap:4,marginBottom:14}}>
+              {[{k:"weekly",l:"📅 今週",c:"#69f0ae"},{k:"all",l:"👑 歴代",c:"#ffd740"}].map(t=>(
+                <button key={t.k} onClick={()=>setRankTab(t.k)} style={{flex:1,padding:"9px",borderRadius:10,border:"none",fontSize:13,fontWeight:800,cursor:"pointer",background:rankTab===t.k?`${t.c}20`:"rgba(255,255,255,0.05)",color:rankTab===t.k?t.c:"rgba(255,255,255,0.4)",borderBottom:rankTab===t.k?`2px solid ${t.c}`:"2px solid transparent"}}>{t.l}</button>
+              ))}
+            </div>
+            {(()=>{
+              const list=rankTab==="weekly"?rankWeekly:rankAll;
+              if(list.length===0)return(<div style={{textAlign:"center",padding:30,color:"rgba(255,255,255,0.3)",fontSize:13}}>まだ記録がないよ<br/>クリアしてランキングに登録しよう！</div>);
+              return(<div style={{display:"flex",flexDirection:"column",gap:4}}>{list.map((e,i)=><RankRow key={i} e={e} i={i} hl={false}/>)}</div>);
+            })()}
+            {rankTab==="weekly"&&<div style={{textAlign:"center",marginTop:10,fontSize:10,color:"rgba(255,255,255,0.25)"}}>毎週月曜 AM4:00 リセット</div>}
+            <button onClick={()=>setShowRanking(false)} style={{width:"100%",marginTop:14,padding:10,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#ccc",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>とじる</button>
+          </div>
+        </div>
+      )}
+
+      {/* LINE confirm modal */}
+      {showLineConfirm&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:16}} onClick={()=>setShowLineConfirm(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#1a1a2e",borderRadius:20,padding:28,maxWidth:340,width:"100%",border:"2px solid #00e67640",textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:8}}>⚠️</div>
+            <div style={{fontSize:16,fontWeight:800,color:"#fff",marginBottom:4}}>{alt}ALTを報告してリセットします</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginBottom:16}}>報告するとALTが0にもどります</div>
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>setShowLineConfirm(false)} style={{flex:1,padding:10,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#ccc",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>やめる</button>
+              <button onClick={sendLine} style={{flex:1,padding:10,background:"linear-gradient(135deg,#00b900,#009900)",border:"none",color:"#fff",borderRadius:10,fontSize:13,fontWeight:800,cursor:"pointer"}}>OK！送る</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <p style={{color:"rgba(255,255,255,0.3)",marginTop:20,fontSize:11}}>探究教室TRAIL × 文明ビルダー</p>
+    </div>
+  );
+
+  // ═══════════ GAME ═══════════
+  const ei=ERAS[era],am=cc&&cc.co.every(co=>cld.includes(`${era}-${co.k}`));
+
+  return(
+    <div style={{minHeight:"100vh",background:`linear-gradient(170deg,#1a2f1a 0%,${ei.color}18 50%,#0d1f10 100%)`,padding:"10px 8px",boxSizing:"border-box",position:"relative"}}>
+
+
+      {/* TOP */}
+      <div className="mw" style={{margin:"0 auto 8px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <button onClick={()=>setScr("title")} className="tb-nav-btn" style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",color:"#ccc",padding:"5px 14px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:600}}>← タイトル</button>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <div style={{background:`${ei.color}30`,border:`1px solid ${ei.color}60`,borderRadius:20,padding:"4px 14px",display:"flex",alignItems:"center",gap:5}}><span style={{fontSize:16}}>{ei.icon}</span><span className="tb-era-name" style={{color:"#fff",fontWeight:800,fontSize:13}}>{ei.name}</span></div>
+          <span className="tb-era-badge" style={{fontSize:9,color:dc.color,fontWeight:700,background:`${dc.color}20`,border:`1px solid ${dc.color}40`,borderRadius:8,padding:"2px 7px"}}>{dc.icon}{gC}×{gR}</span>
+        </div>
+        <button onClick={rst} className="tb-nav-btn" style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",color:"#ccc",padding:"5px 14px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:600}}>🔄</button>
+      </div>
+
+      {/* STATS */}
+      <div className="mw" style={{margin:"0 auto 8px",display:"flex",gap:4,justifyContent:"center",flexWrap:"wrap"}}>
+        {[{i:"⭐",l:"国力",v:pw,c:"#ffd740"},{i:"👥",l:"人口",v:st.pop,c:"#64b5f6"},{i:"🍚",l:"食料",v:st.food,c:"#aed581"},{i:hpE,l:"幸福",v:st.happy,c:"#ffd54f"},{i:evE,l:"環境",v:envSc,c:envSc>=50?"#66bb6a":"#ff7043"}].map(s=>(
+          <div key={s.l} className="tb-stat" style={{background:"rgba(0,0,0,0.35)",borderRadius:10,padding:"5px 10px",display:"flex",alignItems:"center",gap:5,minWidth:65,border:`1px solid ${s.c}40`}}><span className="tb-stat-icon" style={{fontSize:14}}>{s.i}</span><div><div className="tb-stat-label" style={{fontSize:8,color:"rgba(255,255,255,0.5)",fontWeight:700}}>{s.l}</div><div className="tb-stat-val" style={{fontSize:13,color:s.c,fontWeight:900}}>{s.v}</div></div></div>
+        ))}
+      </div>
+
+      {/* ERA hover */}
+      <div className="mw" style={{margin:"0 auto 8px",position:"relative"}}>
+        <div onClick={()=>era<MAX_ERA&&setHE(h=>!h)} style={{background:am?"linear-gradient(135deg,rgba(76,175,80,0.35),rgba(56,142,60,0.25))":`linear-gradient(135deg,${ei.color}25,${ei.color}10)`,borderRadius:14,padding:"10px 14px",cursor:era<MAX_ERA?"pointer":"default",border:am?"2px solid rgba(76,175,80,0.5)":`2px solid ${ei.color}50`,boxShadow:am?"0 0 20px rgba(76,175,80,0.2)":`0 0 15px ${ei.color}15`}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+            <span style={{fontSize:13,color:"#fff",fontWeight:800}}>{ei.icon} {ei.name}</span>
+            {era<MAX_ERA&&<span style={{fontSize:10,fontWeight:700,color:am?"#81c784":"#ffcc80",background:am?"rgba(76,175,80,0.2)":"rgba(255,183,77,0.15)",borderRadius:8,padding:"2px 10px",animation:am?"pulse 1.5s ease infinite":"none"}}>{am?"🎉 進化まもなく！":hE?"✕ とじる":"▼ 条件を見る"}</span>}
+            {era>=MAX_ERA&&<span style={{fontSize:10,color:"#ffd54f",fontWeight:800}}>🎉 最高の時代！</span>}
+          </div>
+          <div style={{display:"flex",gap:3}}>{ERAS.map((e,i)=>(<div key={i} style={{flex:1,textAlign:"center"}}><div style={{height:7,borderRadius:4,background:i<=era?`linear-gradient(90deg,${e.color},${e.color}cc)`:"rgba(255,255,255,0.06)",boxShadow:i===era?`0 0 8px ${e.color}80`:"none"}}/><div style={{fontSize:i===era?13:9,marginTop:3,color:i<=era?"#fff":"rgba(255,255,255,0.2)",fontWeight:i===era?900:400}}>{e.icon}</div></div>))}</div>
+        </div>
+        {hE&&cc&&(<>
+          <div onClick={()=>setHE(false)} style={{position:"fixed",inset:0,zIndex:55}}/>
+          <div style={{position:"absolute",left:0,right:0,top:"100%",zIndex:60,marginTop:4,background:"rgba(30,30,20,0.97)",borderRadius:14,padding:"14px 16px",border:`2px solid ${ei.color}40`,boxShadow:"0 12px 40px rgba(0,0,0,0.6)",animation:"fadeIn 0.15s ease"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}><span style={{fontSize:26}}>{cc.toI}</span><div><div style={{fontSize:14,color:"#fff",fontWeight:900}}>{cc.toN}にすすむには</div><div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>条件1つで ⭐国力 + 🪙ALT ゲット！</div></div></div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {cc.co.map((co,i)=>{const mt=cld.includes(`${era}-${co.k}`),vl=st[co.k],pc=Math.min(100,Math.round(vl/co.t*100));return(
+                <div key={i} className="tb-cond" style={{background:mt?"rgba(76,175,80,0.15)":"rgba(255,255,255,0.05)",borderRadius:8,padding:"8px 12px",border:mt?"1px solid rgba(76,175,80,0.3)":"1px solid rgba(255,255,255,0.08)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:mt?0:4}}><span className="tb-cond-check" style={{fontSize:16}}>{mt?"✅":i===0?"🌿":"⬜"}</span><span className="tb-cond-label" style={{flex:1,fontSize:13,fontWeight:700,color:mt?"#81c784":"rgba(255,255,255,0.7)",textDecoration:mt?"line-through":"none"}}>{co.l}</span><span className="tb-cond-val" style={{fontSize:12,fontWeight:800,color:mt?"#81c784":"#ffb74d"}}>{vl}/{co.t}</span></div>
+                  {!mt&&<div style={{height:4,borderRadius:2,background:"rgba(255,255,255,0.1)",overflow:"hidden"}}><div style={{height:"100%",width:`${pc}%`,background:co.k==="env"?"#66bb6a":"#ffb74d",borderRadius:2,transition:"width 0.3s"}}/></div>}
+                </div>
+              );})}
+            </div>
+            <div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,0.4)",textAlign:"center"}}>📊 総合:{ts} → 1条件で ⭐+{calcRw(ts)}</div>
+          </div>
+        </>)}
+      </div>
+
+      {/* GENESIS ENV BAR */}
+      {isGenesis&&cc&&(()=>{
+        const envCond=cc.co.find(co=>co.k==="env");if(!envCond)return null;
+        const pct=Math.min(100,Math.round(envSc/envCond.t*100));const met=envSc>=envCond.t;
+        return(
+          <div className="mw" style={{margin:"0 auto 10px",background:met?"linear-gradient(135deg,rgba(46,125,50,0.3),rgba(27,94,32,0.2))":"linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",borderRadius:16,padding:"16px 20px",border:met?"2px solid rgba(76,175,80,0.5)":"2px solid rgba(255,255,255,0.1)",transition:"all 0.5s"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <span style={{fontSize:14,fontWeight:800,color:"#fff"}}>🌍 地形のバランスをとろう</span>
+              <span style={{fontSize:13,fontWeight:900,color:met?"#69f0ae":"#ffb74d"}}>{envSc} / {envCond.t}</span>
+            </div>
+            <div style={{height:12,borderRadius:6,background:"rgba(0,0,0,0.3)",overflow:"hidden",border:"1px solid rgba(255,255,255,0.05)"}}>
+              <div style={{height:"100%",width:`${pct}%`,background:met?"linear-gradient(90deg,#66bb6a,#43a047)":"linear-gradient(90deg,#ffa726,#ff9800)",borderRadius:6,transition:"width 0.4s ease, background 0.4s",boxShadow:met?"0 0 12px rgba(76,175,80,0.4)":"none"}}/>
+            </div>
+            <div style={{textAlign:"center",marginTop:6,fontSize:11,color:"rgba(255,255,255,0.45)",fontWeight:600}}>
+              {met?"✅ 条件クリア！ポップアップを確認しよう":pct>=70?`あとすこし！（残り${envCond.t-envSc}）`:"5種類の地形をバランスよくおこう"}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* PHASE + TRADE BTN (hidden during genesis) */}
+      {!isGenesis&&(
+      <div className="mw" style={{margin:"0 auto 6px",display:"flex",gap:4}}>
+        <button onClick={()=>!lk&&setPh("terrain")} className="tb-phase-btn" style={{flex:1,padding:"9px 8px",borderRadius:10,border:"none",cursor:lk?"default":"pointer",background:ph==="terrain"?"rgba(255,248,235,0.95)":"rgba(255,255,255,0.08)",color:ph==="terrain"?"#2d3a1e":lk?"#555":"#999",fontWeight:800,fontSize:12,opacity:lk?0.5:1}}>⛰️ ① 地形 {lk&&"🔒"}</button>
+        <button onClick={()=>{if(!lk)cfm();else setPh("build");}} className="tb-phase-btn" style={{flex:1,padding:"9px 8px",borderRadius:10,border:"none",cursor:"pointer",background:ph==="build"?"rgba(255,248,235,0.95)":!lk?"linear-gradient(135deg,#ffa726,#ff9800)":"rgba(255,255,255,0.08)",color:ph==="build"?"#2d3a1e":!lk?"#fff":"#999",fontWeight:800,fontSize:12,boxShadow:!lk&&ph!=="build"?"0 2px 10px rgba(255,152,0,0.3)":"none"}}>🏠 ② 文明 {!lk&&"▶"}</button>
+        {lk&&<button onClick={()=>setShowTrade(true)} style={{padding:"9px 12px",borderRadius:10,border:"none",cursor:"pointer",background:"linear-gradient(135deg,#26c6da,#0097a7)",color:"#fff",fontWeight:800,fontSize:12}}>🤝 輸出</button>}
+      </div>
+      )}
+
+      {/* PALETTE */}
+      <div className="mw tb-palette-wrap" style={{margin:"0 auto 6px",background:"rgba(0,0,0,0.25)",borderRadius:12,padding:8,minHeight:48}}>
+        {ph==="terrain"&&!lk?(
+          <div>
+            <div style={{display:"flex",gap:5,justifyContent:"center",flexWrap:"wrap",marginBottom:6}}>
+              {Object.entries(TER).map(([k,t])=>(<button key={k} onClick={()=>setST(k)} className="tb-ter-btn" style={{padding:"6px 10px",borderRadius:10,cursor:"pointer",background:sT===k?"#fff8eb":"rgba(255,255,255,0.08)",border:sT===k?"2px solid #8b7355":"2px solid transparent",color:sT===k?"#2d3a1e":"#bbb",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",gap:4}}><span className="tb-ter-swatch" style={{width:14,height:14,borderRadius:3,background:t.color,display:"inline-block",border:"1px solid rgba(0,0,0,0.15)"}}/>{t.label}</button>))}
+            </div>
+            <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,0.6)"}}>{evE} 環境:<b style={{color:envSc>=60?"#66bb6a":envSc>=30?"#ffa726":"#ef5350"}}>{envSc}点</b> → 初期国力:<b style={{color:"#ffd740"}}>{cIP(envSc)}pt</b></div>
+          </div>
+        ):(
+          <div style={{display:"flex",gap:5,overflowX:"auto",padding:"2px 0"}}>
+            {av.map(b=>{const sl=sB===b.id,cost=getBuildCost(b,policies),lkd=cost>pw;return(
+              <button key={b.id} onClick={()=>setSB(sl?null:b.id)} onMouseEnter={()=>setTip(b)} onMouseLeave={()=>setTip(null)}
+                className="tb-bld-btn" style={{padding:"5px 9px",borderRadius:10,cursor:"pointer",background:sl?"#fff8eb":lkd?"rgba(255,255,255,0.03)":"rgba(255,255,255,0.08)",border:sl?"2px solid #8b7355":"2px solid transparent",color:sl?"#2d3a1e":lkd?"#555":"#ccc",fontSize:11,fontWeight:700,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,opacity:lkd?0.5:1,flexShrink:0}}>
+                <span className="tb-bld-emoji" style={{fontSize:16}}>{b.emoji}</span><div style={{textAlign:"left"}}><div className="tb-bld-name" style={{fontSize:10}}>{b.name}</div><div className="tb-bld-cost" style={{fontSize:8,opacity:0.7}}>⭐{cost} {b.env>0?`🌿-${b.env}`:b.env<0?`🌿+${Math.abs(b.env)}`:""}</div></div>
+              </button>
+            );})}
+          </div>
+        )}
+      </div>
+
+      {/* ACTIVE POLICIES */}
+      {policies.length>0&&(
+        <div className="mw" style={{margin:"0 auto 4px",display:"flex",gap:4,justifyContent:"center",flexWrap:"wrap"}}>
+          {policies.map(p=><span key={p.id} className="tb-policy-active" style={{fontSize:9,background:"rgba(255,255,255,0.08)",borderRadius:6,padding:"2px 8px",color:"#ccc",fontWeight:700}}>{p.emoji}{p.name}</span>)}
+        </div>
+      )}
+
+      {/* TIP */}
+      {tip&&ph==="build"&&(
+        <div className="mw tb-tip" style={{margin:"0 auto 4px",background:"rgba(255,248,235,0.95)",borderRadius:10,padding:"8px 14px",border:"1px solid #d4c5a0",fontSize:12,color:"#2d3a1e",display:"flex",gap:10,alignItems:"center"}}>
+          <span className="tb-tip-emoji" style={{fontSize:26}}>{tip.emoji}</span><div><div style={{fontWeight:800,fontSize:13}}>{tip.name}</div><div style={{color:"#6b5d3e"}}>{tip.desc}</div>
+            <div style={{display:"flex",gap:8,marginTop:2,fontSize:10,fontWeight:700}}>{tip.pop>0&&<span>👥+{tip.pop}</span>}{tip.food>0&&<span>🍚+{tip.food}</span>}{tip.happy!==0&&<span>{tip.happy>0?"😊+":"😢"}{tip.happy}</span>}<span style={{color:tip.env>0?"#e65100":"#2e7d32"}}>🌿{tip.env>0?"-":"+"}{Math.abs(tip.env)}</span>{tip.needs.length>0&&<span style={{color:"#e65100"}}>⚠️{tip.needs.map(n=>TER[n].label).join("・")}必要</span>}</div></div>
+        </div>
+      )}
+
+      {/* GRID */}
+      <div onMouseUp={()=>ipR.current=false} onMouseLeave={()=>ipR.current=false} onTouchEnd={()=>ipR.current=false} className="grid-wrap" style={{margin:"0 auto 8px",background:"rgba(0,0,0,0.2)",borderRadius:14,padding:6,border:"2px solid rgba(139,115,85,0.2)",userSelect:"none",WebkitUserSelect:"none"}}>
+        <div className="tb-grid" style={{display:"grid",gridTemplateColumns:`repeat(${gC},1fr)`,gap:2}}>
+          {grid.map((row,r)=>row.map((cell,c)=>{
+            const te=cell.t?TER[cell.t]:null,bl=cell.b?BLD.find(b=>b.id===cell.b):null;
+            const bg=te?te.color:"#3a3a2e",ad=getAdj(grid,r,c),bn=cell.b&&(ad.includes("river")||ad.includes("sea"));
+            return(<div key={`${r}-${c}`}
+              onMouseDown={e=>{e.preventDefault();ipR.current=true;clk(r,c);}} onMouseEnter={()=>{if(ipR.current)pnt(r,c);}}
+              onTouchStart={()=>{ipR.current=true;clk(r,c);}} onTouchMove={e=>{if(!ipR.current)return;const t=e.touches[0],el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.dataset.row!==undefined)pnt(+el.dataset.row,+el.dataset.col);}}
+              onContextMenu={e=>{e.preventDefault();rmv(r,c);}} data-row={r} data-col={c}
+              className="tb-cell" style={{aspectRatio:"1",borderRadius:6,cursor:"pointer",background:bg,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:te?"inset 0 -2px 4px rgba(0,0,0,0.2)":"inset 0 0 0 1px rgba(255,255,255,0.04)",outline:ph==="build"&&cell.t==="plain"&&!cell.b?"2px dashed rgba(255,255,255,0.2)":"none",outlineOffset:-2}}>
+              {te&&te.emoji&&!bl&&<span className="tb-cell-emoji" style={{fontSize:18,opacity:0.8,pointerEvents:"none"}}>{te.emoji}</span>}
+              {bl&&<span className="tb-cell-bld" style={{fontSize:22,pointerEvents:"none",filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.3))"}}>{bl.emoji}</span>}
+              {cell.lv>0&&<div className="tb-lv" style={{position:"absolute",top:0,left:0,fontSize:7,background:"rgba(255,215,64,0.85)",color:"#333",fontWeight:900,borderRadius:"0 0 3px 0",padding:"0 2px",lineHeight:1.3}}>Lv{cell.lv+1}</div>}
+              {bn&&<div className="tb-bonus" style={{position:"absolute",top:0,right:0,fontSize:7,background:"rgba(0,150,255,0.6)",borderRadius:3,padding:"0 2px",color:"#fff",fontWeight:900}}>{ad.includes("river")&&"💧"}{ad.includes("sea")&&"🌊"}</div>}
+              {ph==="build"&&cell.t==="plain"&&!cell.b&&<span className="tb-plus" style={{fontSize:12,opacity:0.3,pointerEvents:"none"}}>＋</span>}
+            </div>);
+          }))}
+        </div>
+      </div>
+
+      <div className="mw tb-help" style={{margin:"0 auto 6px",textAlign:"center",fontSize:10,color:"rgba(255,255,255,0.4)"}}>{ph==="terrain"&&!lk?"ドラッグで地形 ┃ 右クリックでけす":"タップで建物 ┃ 建物タップでLvUP ┃ 右クリック=こわす"}</div>
+
+      {lk&&<div className="mw" style={{margin:"0 auto 8px",textAlign:"center"}}><button onClick={()=>setRpt(true)} className="tb-report-btn" style={{padding:"8px 24px",fontSize:13,fontWeight:800,background:"linear-gradient(135deg,#5ba4cf,#1565c0)",color:"#fff",border:"none",borderRadius:10,cursor:"pointer"}}>📝 レポート</button></div>}
+
+      {/* ═══ TRADE MODAL ═══ */}
+      {showTrade&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:90,padding:16}} onClick={()=>setShowTrade(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff8eb",borderRadius:20,padding:24,maxWidth:380,width:"100%",border:"3px solid #0097a7",animation:"popIn 0.2s ease"}}>
+            <div style={{textAlign:"center",marginBottom:12}}><div style={{fontSize:32}}>🤝</div><h3 style={{fontSize:16,fontWeight:900,color:"#2d3a1e"}}>資源を輸出する</h3><div style={{fontSize:11,color:"#6b5d3e"}}>余った資源を⭐国力にかえよう{grid.some(r=>r.some(c=>c.b==="port"))?" （港あり！レート1.5倍）":""}</div></div>
+            {cc&&["food","happy"].filter(k=>cc.co.find(co=>co.k===k)).map(k=>{
+              const cond=cc.co.find(co=>co.k===k);const surplus=st[k]-cond.t;
+              const label=k==="food"?"🍚 食料":"😊 幸福";
+              const rate=getTradeRate(policies);const hasPort=grid.some(r=>r.some(c=>c.b==="port"));
+              const earn=surplus>0?Math.max(1,Math.round(surplus*0.1*rate*(hasPort?1.5:1))):0;
+              return(
+                <div key={k} style={{background:surplus>0?"#f1f8e9":"#fafafa",borderRadius:12,padding:12,marginBottom:8,border:`1px solid ${surplus>0?"#aed581":"#eee"}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontSize:13,fontWeight:700}}>{label} 余剰: {Math.max(0,surplus)}</span>
+                    <button onClick={()=>doTrade(k)} disabled={surplus<=0} style={{padding:"6px 16px",borderRadius:8,border:"none",fontSize:12,fontWeight:800,background:surplus>0?"linear-gradient(135deg,#26c6da,#0097a7)":"#ddd",color:surplus>0?"#fff":"#999",cursor:surplus>0?"pointer":"default"}}>⭐+{earn} 輸出</button>
+                  </div>
+                </div>
+              );
+            })}
+            <button onClick={()=>setShowTrade(false)} style={{width:"100%",marginTop:6,padding:8,background:"transparent",border:"1px solid #ccc",borderRadius:8,fontSize:11,color:"#888",cursor:"pointer"}}>とじる</button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ POLICY MODAL ═══ */}
+      {showPolicy!==null&&(()=>{
+        const ps=POLICIES.find(p=>p.era===showPolicy);if(!ps)return null;
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:95,padding:16}}>
+            <div style={{background:"#fff8eb",borderRadius:20,padding:24,maxWidth:400,width:"100%",border:"3px solid #5c6bc0",animation:"popIn 0.3s ease"}}>
+              <div style={{textAlign:"center",marginBottom:14}}><div style={{fontSize:32}}>📜</div><h3 style={{fontSize:16,fontWeight:900,color:"#2d3a1e"}}>政策をえらぼう</h3><div style={{fontSize:11,color:"#6b5d3e"}}>この時代の戦略を1つ選ぼう（ずっと効果がつづく）</div></div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {ps.cards.map(card=>(
+                  <button key={card.id} onClick={()=>selectPolicy(card)} className="tb-policy-card" style={{padding:"14px 16px",borderRadius:14,border:"2px solid #e0d5c0",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",transition:"all 0.15s"}}
+                    onMouseDown={e=>e.currentTarget.style.transform="scale(0.97)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>
+                    <span className="tb-policy-emoji" style={{fontSize:28}}>{card.emoji}</span>
+                    <div><div style={{fontSize:14,fontWeight:800,color:"#2d3a1e"}}>{card.name}</div><div style={{fontSize:11,color:"#6b5d3e"}}>{card.desc}</div></div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══ LEVEL UP ═══ */}
+      {lU&&(()=>{const cl=grid[lU.r][lU.c];if(!cl.b)return null;const b=BLD.find(x=>x.id===cl.b),nl=cl.lv+1,cu=nl<=MLV,co=cu?LVC[nl]:0;return(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:90,padding:16}} onClick={()=>setLU(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff8eb",borderRadius:20,padding:24,maxWidth:340,width:"100%",border:"3px solid #8b7355",animation:"popIn 0.2s ease"}}>
+            <div style={{textAlign:"center",marginBottom:10}}><div style={{fontSize:36}}>{b.emoji}</div><div style={{fontSize:16,fontWeight:900,color:"#2d3a1e"}}>{b.name}</div><div style={{fontSize:12,color:"#8b7355",fontWeight:700}}>Lv.{cl.lv+1}</div></div>
+            <div style={{background:"#fff",borderRadius:10,padding:8,marginBottom:10,fontSize:12,border:"1px solid #eee",textAlign:"center"}}><div style={{display:"flex",gap:8,justifyContent:"center",fontWeight:700}}>{b.pop>0&&<span>👥{Math.round(b.pop*LVM[cl.lv])}</span>}{b.food>0&&<span>🍚{Math.round(b.food*LVM[cl.lv])}</span>}{b.happy!==0&&<span>{b.happy>0?"😊":"😢"}{Math.round(b.happy*LVM[cl.lv])}</span>}</div></div>
+            {cu?(<><div style={{textAlign:"center",fontSize:12,color:"#6b5d3e",marginBottom:8}}>→Lv.{nl+1}で効果<b style={{color:"#e65100"}}>{Math.round(LVM[nl]*100)}%</b></div>
+              <button onClick={()=>doLv(lU.r,lU.c)} disabled={pw<co} style={{width:"100%",padding:11,fontSize:14,fontWeight:900,background:pw>=co?"linear-gradient(135deg,#ffd740,#ffab00)":"#ccc",color:pw>=co?"#2d3a1e":"#888",border:"none",borderRadius:10,cursor:pw>=co?"pointer":"default"}}>⬆️ LvUP（⭐{co}）</button>
+              {pw<co&&<div style={{textAlign:"center",fontSize:10,color:"#e65100",marginTop:4}}>あと⭐{co-pw}</div>}
+            </>):<div style={{textAlign:"center",fontSize:13,color:"#4caf50",fontWeight:800}}>🎉 最大レベル！</div>}
+            <button onClick={()=>setLU(null)} style={{width:"100%",marginTop:8,padding:7,background:"transparent",border:"1px solid #ccc",borderRadius:8,fontSize:11,color:"#888",cursor:"pointer"}}>とじる</button>
+          </div>
+        </div>
+      );})()}
+
+      {/* ═══ REPORT ═══ */}
+      {rpt&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:90,padding:16}} onClick={()=>setRpt(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff8eb",borderRadius:20,padding:24,maxWidth:420,width:"100%",border:"3px solid #8b7355",maxHeight:"85vh",overflowY:"auto",animation:"popIn 0.2s ease"}}>
+            <div style={{textAlign:"center",marginBottom:12}}><div style={{fontSize:32}}>📝</div><h3 style={{fontSize:18,fontWeight:900,color:"#2d3a1e",margin:"4px 0 0"}}>はっけんレポート</h3></div>
+            <div style={{background:"#fff",borderRadius:12,padding:14,border:"2px dashed #d4c5a0",marginBottom:12,fontSize:13,color:"#333",lineHeight:2,fontWeight:600}}>
+              <p style={{margin:"0 0 6px"}}>🏛️ <b>{ei.name}</b>の{st.pop>=300?"大都市":st.pop>=100?"町":"村"}</p>
+              <p style={{margin:"0 0 4px"}}>⭐国力:{pw} 👥人口:{st.pop} 🍚食料:{st.food}</p>
+              <p style={{margin:"0 0 4px"}}>{hpE}幸福:{st.happy} {evE}環境:{envSc} 📊総合:{ts}</p>
+              {policies.length>0&&<p style={{margin:"4px 0"}}>📜 政策: {policies.map(p=>p.name).join("・")}</p>}
+              <hr style={{border:"none",borderTop:"1px dashed #ddd",margin:"8px 0"}}/>
+              {envSc>=60&&<p style={{margin:"0 0 4px",fontSize:12}}>🌳 自然をまもりながら発展！</p>}
+              {envSc<30&&<p style={{margin:"0 0 4px",fontSize:12,color:"#e65100"}}>🏜️ 環境がわるくなっている…</p>}
+            </div>
+            <div style={{marginBottom:10}}><div style={{fontSize:12,fontWeight:800,color:"#2d3a1e",marginBottom:6}}>✏️ 気づいたこと</div><textarea placeholder="例：環境をまもりながらの発展がむずかしかった！" style={{width:"100%",padding:10,borderRadius:10,border:"2px solid #ddd",fontSize:12,resize:"vertical",minHeight:60,fontFamily:"inherit",boxSizing:"border-box",lineHeight:1.8}}/></div>
+            <div style={{marginBottom:10,background:"#fff3e0",borderRadius:10,padding:10,fontSize:12,color:"#e65100",lineHeight:1.8,fontWeight:600}}>🤔 考えてみよう<br/>・なぜ地形のバランスが大切？<br/>・政策でどんなトレードオフがあった？<br/>・実さいの国も環境と発展で悩んでいる？</div>
+            <button onClick={()=>setRpt(false)} style={{width:"100%",padding:10,background:"#7cb342",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,cursor:"pointer"}}>とじる</button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ RESULT ═══ */}
+      {showResult&&resultData&&(()=>{
+        const{star,starAlt,firstAlt,totalAlt}=resultData;
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:16}}>
+            <div style={{background:"linear-gradient(170deg,#1a1a2e,#16213e)",borderRadius:24,padding:32,maxWidth:420,width:"100%",border:"2px solid #00e67640",boxShadow:"0 20px 60px rgba(0,0,0,0.8)",textAlign:"center",animation:"popIn 0.3s ease"}}>
+              <div style={{fontSize:48,marginBottom:8}}>🏙️</div>
+              <h2 style={{fontSize:22,fontWeight:900,color:"#fff",marginBottom:4}}>近代に到達！</h2>
+              <div style={{fontSize:40,marginBottom:12,letterSpacing:8}}>
+                {[1,2,3].map(i=><span key={i} style={{animation:`starPop 0.4s ease ${i*0.2}s both`,display:"inline-block"}}>{i<=star?"⭐":"☆"}</span>)}
+              </div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",marginBottom:6}}>{evE} 環境スコア: {envSc}</div>
+
+              {/* ALT BOX */}
+              <div style={{background:"rgba(0,230,118,0.08)",borderRadius:16,padding:"20px 24px",margin:"0 auto 16px",border:"2px solid rgba(0,230,118,0.2)",maxWidth:280}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:firstAlt?8:0}}>
+                  <span style={{fontSize:14,color:"rgba(255,255,255,0.6)",fontWeight:700}}>🪙 クリア報酬</span>
+                  <span style={{fontSize:22,fontWeight:900,color:"#00e676"}}>+{starAlt} ALT</span>
+                </div>
+                {firstAlt>0&&(
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+                    <span style={{fontSize:14,color:"rgba(255,255,255,0.6)",fontWeight:700}}>🆕 初クリア</span>
+                    <span style={{fontSize:22,fontWeight:900,color:"#ffd740"}}>+{firstAlt} ALT</span>
+                  </div>
+                )}
+                <div style={{marginTop:12,paddingTop:12,borderTop:"2px solid rgba(255,255,255,0.1)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:16,fontWeight:900,color:"#fff"}}>合計</span>
+                  <div className="tb-result-alt" style={{fontSize:36,fontWeight:900,color:"#00e676",background:"linear-gradient(90deg,#00e676,#69f0ae,#00e676)",backgroundSize:"200% 100%",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",animation:"shimmer 2s linear infinite"}}>+{totalAlt} ALT</div>
+                </div>
+              </div>
+
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginBottom:16}}>累計 🪙 {alt} ALT</div>
+
+              <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:12,marginBottom:12,fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.8,textAlign:"left"}}>
+                <div>👥 人口: {st.pop} ┃ 🍚 食料: {st.food}</div>
+                <div>{hpE} 幸福: {st.happy} ┃ {evE} 環境: {envSc}</div>
+                <div>📜 政策: {policies.map(p=>p.name).join("・")||"なし"}</div>
+                <div style={{textAlign:"center",marginTop:4,fontWeight:800,color:"#69f0ae"}}>📊 総合スコア: {ts}</div>
+              </div>
+
+              {/* RANKING REGISTER */}
+              {!rankRegistered?(
+                <div style={{background:"rgba(255,215,64,0.06)",borderRadius:12,padding:"14px 16px",marginBottom:12,border:"1px solid rgba(255,215,64,0.15)"}}>
+                  <div style={{fontSize:13,fontWeight:800,color:"#ffd740",marginBottom:8,textAlign:"center"}}>🏆 ランキングに登録</div>
+                  <div style={{display:"flex",gap:6}}>
+                    <input value={rankName} onChange={e=>setRankName(e.target.value)} placeholder="なまえ" maxLength={10} style={{flex:1,padding:"8px 12px",borderRadius:8,border:"2px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"#fff",fontSize:13,fontWeight:600,outline:"none"}}/>
+                    <button onClick={registerRank} disabled={!rankName.trim()} style={{padding:"8px 18px",borderRadius:8,border:"none",fontSize:13,fontWeight:800,cursor:rankName.trim()?"pointer":"default",background:rankName.trim()?"linear-gradient(135deg,#ffd740,#ffab00)":"#333",color:rankName.trim()?"#2d3a1e":"#666"}}>登録</button>
+                  </div>
+                </div>
+              ):(
+                <div style={{background:"rgba(0,230,118,0.08)",borderRadius:12,padding:"14px 16px",marginBottom:12,border:"1px solid rgba(0,230,118,0.15)",textAlign:"center"}}>
+                  <div style={{fontSize:14,fontWeight:800,color:"#69f0ae",marginBottom:8}}>🏆 登録完了！{myRankIdx>=0?`今週 ${myRankIdx+1}位！`:""}</div>
+                  {rankWeekly.length>0&&(
+                    <div style={{display:"flex",flexDirection:"column",gap:3,maxHeight:150,overflowY:"auto"}}>
+                      {rankWeekly.slice(0,5).map((e,i)=><RankRow key={i} e={e} i={i} hl={i===myRankIdx}/>)}
+                      {rankWeekly.length>5&&<div style={{fontSize:10,color:"rgba(255,255,255,0.3)",textAlign:"center",marginTop:4}}>…他{rankWeekly.length-5}件</div>}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>{setShowResult(false);rst();}} style={{flex:1,padding:10,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#ccc",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>🔄 もう一回</button>
+                <button onClick={()=>{setShowResult(false);setScr("title");}} style={{flex:1,padding:10,background:"linear-gradient(135deg,#00e676,#00c853)",border:"none",color:"#1a1a2e",borderRadius:10,fontSize:13,fontWeight:800,cursor:"pointer"}}>🏠 タイトルへ</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══ GENESIS CLEAR ═══ */}
+      {showGenesisClear&&(()=>{
+        const envCond=cc&&cc.co.find(co=>co.k==="env");
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:16,animation:"fadeIn 0.3s"}}>
+            <div style={{background:"linear-gradient(170deg,#1b3a1b,#0d2f0d)",borderRadius:24,padding:"36px 28px",maxWidth:400,width:"100%",border:"3px solid rgba(76,175,80,0.5)",boxShadow:"0 20px 60px rgba(0,0,0,0.7),0 0 40px rgba(76,175,80,0.15)",textAlign:"center",animation:"popIn 0.3s ease"}}>
+              <div style={{fontSize:56,marginBottom:8}}>🎉</div>
+              <h2 style={{fontSize:22,fontWeight:900,color:"#69f0ae",marginBottom:4,letterSpacing:3}}>環境バランス達成！</h2>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.6)",marginBottom:16,lineHeight:1.8}}>地形のバランスがととのった！<br/>いよいよ文明をつくろう</div>
+              <div style={{display:"flex",gap:12,justifyContent:"center",marginBottom:20}}>
+                <div style={{background:"rgba(255,255,255,0.06)",borderRadius:12,padding:"10px 20px",border:"1px solid rgba(255,255,255,0.1)"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700}}>🌿 環境</div>
+                  <div style={{fontSize:28,fontWeight:900,color:"#69f0ae"}}>{envSc}<span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>点</span></div>
+                </div>
+                <div style={{background:"rgba(255,255,255,0.06)",borderRadius:12,padding:"10px 20px",border:"1px solid rgba(255,255,255,0.1)"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700}}>⭐ 初期国力</div>
+                  <div style={{fontSize:28,fontWeight:900,color:"#ffd740"}}>{cIP(envSc)}<span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>pt</span></div>
+                </div>
+              </div>
+              <button onClick={goToStoneAge} style={{width:"100%",padding:"16px",fontSize:18,fontWeight:900,background:"linear-gradient(135deg,#a0845c,#8b7355)",color:"#fff",border:"none",borderRadius:14,cursor:"pointer",boxShadow:"0 4px 20px rgba(160,132,92,0.4)",letterSpacing:3}}>🪨 石器時代へ</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══ TUTORIAL ═══ */}
+      {showTutorial&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:16,animation:"fadeIn 0.3s"}}>
+          <div style={{background:"linear-gradient(170deg,#2a2a1a,#1a2f1a)",borderRadius:24,padding:"32px 28px",maxWidth:400,width:"100%",border:"3px solid rgba(160,132,92,0.5)",boxShadow:"0 20px 60px rgba(0,0,0,0.7)",textAlign:"center",animation:"popIn 0.3s ease"}}>
+            <div style={{fontSize:48,marginBottom:8}}>💡</div>
+            <h2 style={{fontSize:18,fontWeight:900,color:"#fff",marginBottom:12}}>タブの使いかた</h2>
+            <div style={{background:"rgba(255,255,255,0.06)",borderRadius:14,padding:"16px",marginBottom:16,textAlign:"left",border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                <span style={{background:"rgba(255,248,235,0.9)",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:800,color:"#2d3a1e"}}>⛰️ ① 地形</span>
+                <span style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>→ 配置した地形を確認</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{background:"rgba(255,248,235,0.9)",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:800,color:"#2d3a1e"}}>🏠 ② 文明</span>
+                <span style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>→ 建物を建てよう</span>
+              </div>
+            </div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.5)",marginBottom:16,lineHeight:1.8}}>地形タブで川や海の位置を確認しながら<br/>建物を建てるのがコツ！</div>
+            <button onClick={closeTutorial} style={{width:"100%",padding:"14px",fontSize:16,fontWeight:900,background:"linear-gradient(135deg,#a0845c,#8b7355)",color:"#fff",border:"none",borderRadius:14,cursor:"pointer",letterSpacing:3}}>▶ わかった！</button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ BRIEFING ═══ */}
+      {showBrief&&cc&&(()=>{
+        const envNow=calcEnv(grid,[]);const initPow=cIP(envNow);
+        const hints=["💡 まずは たて穴住居で人をすまわせよう","💡 木の実ひろい場で食料をあつめよう","💡 環境をこわしすぎないように注意！"];
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:16,animation:"fadeIn 0.3s"}}>
+            <div style={{background:"linear-gradient(170deg,#2a2a1a,#1a2f1a)",borderRadius:24,padding:"32px 28px",maxWidth:400,width:"100%",border:`3px solid ${ERAS[1].color}80`,boxShadow:"0 20px 60px rgba(0,0,0,0.7)",animation:"popIn 0.3s ease"}}>
+              <div style={{textAlign:"center",marginBottom:16}}>
+                <div style={{fontSize:48,marginBottom:4}}>{ERAS[1].icon}</div>
+                <h2 style={{fontSize:22,fontWeight:900,color:"#fff",letterSpacing:4,margin:"0 0 4px"}}>{ERAS[1].name}</h2>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",fontWeight:700}}>～ 文明のはじまり ～</div>
+              </div>
+
+              <div style={{display:"flex",gap:10,justifyContent:"center",marginBottom:16}}>
+                <div style={{background:"rgba(255,255,255,0.06)",borderRadius:12,padding:"10px 18px",textAlign:"center",border:"1px solid rgba(255,255,255,0.1)"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,marginBottom:2}}>{evE} 環境バランス</div>
+                  <div className="tb-brief-env" style={{fontSize:26,fontWeight:900,color:envNow>=60?"#66bb6a":envNow>=30?"#ffa726":"#ef5350"}}>{envNow}<span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>点</span></div>
+                </div>
+                <div style={{background:"rgba(255,255,255,0.06)",borderRadius:12,padding:"10px 18px",textAlign:"center",border:"1px solid rgba(255,255,255,0.1)"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,marginBottom:2}}>⭐ 初期国力</div>
+                  <div className="tb-brief-env" style={{fontSize:26,fontWeight:900,color:"#ffd740"}}>{initPow}<span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>pt</span></div>
+                </div>
+              </div>
+
+              <div style={{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:"14px 16px",marginBottom:16,border:`1px solid ${ERAS[1].color}30`}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                  <span style={{fontSize:22}}>{cc.toI}</span>
+                  <div style={{fontSize:14,fontWeight:900,color:"#fff"}}>{cc.toN}への道</div>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {cc.co.map((co,i)=>{const val=st[co.k],met=val>=co.t;return(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:met?"rgba(76,175,80,0.12)":"rgba(255,255,255,0.03)",borderRadius:8,padding:"7px 10px",border:met?"1px solid rgba(76,175,80,0.25)":"1px solid rgba(255,255,255,0.06)"}}>
+                      <span style={{fontSize:15}}>{met?"✅":i===0?"🌿":"⬜"}</span>
+                      <span style={{flex:1,fontSize:13,fontWeight:700,color:met?"#81c784":"rgba(255,255,255,0.65)"}}>{co.l}</span>
+                      <span style={{fontSize:12,fontWeight:800,color:met?"#81c784":"#ffb74d"}}>{val}/{co.t}</span>
+                    </div>
+                  );})}
+                </div>
+              </div>
+
+              <div style={{background:"rgba(255,248,235,0.06)",borderRadius:10,padding:"10px 14px",marginBottom:18,border:"1px dashed rgba(255,255,255,0.08)"}}>
+                {hints.map((h,i)=><div key={i} className="tb-brief-hint" style={{fontSize:12,color:"rgba(255,255,255,0.55)",fontWeight:600,lineHeight:1.8}}>{h}</div>)}
+              </div>
+
+              <button onClick={startBuild} className="tb-brief-go" style={{width:"100%",padding:"14px",fontSize:16,fontWeight:900,background:`linear-gradient(135deg,${ERAS[1].color},${ERAS[1].color}cc)`,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",boxShadow:`0 4px 20px ${ERAS[1].color}55`,letterSpacing:3}}>▶ 文明をはじめる</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ERA UP */}
+      {eU&&(<div style={{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.6)",zIndex:80,pointerEvents:"none",animation:"fadeIn 0.3s"}}><div style={{background:"rgba(255,248,235,0.97)",borderRadius:24,padding:"36px 52px",boxShadow:"0 20px 60px rgba(0,0,0,0.5)",border:`3px solid ${ERAS[era].color}`,textAlign:"center"}}><div className="tb-eraup-icon" style={{fontSize:52}}>{ERAS[era].icon}</div><div className="tb-eraup-name" style={{fontSize:22,fontWeight:900,color:"#2d3a1e",marginTop:6,letterSpacing:4}}>{ERAS[era].name}</div><div style={{fontSize:13,color:"#6b5d3e",marginTop:4}}>新しい時代がはじまった！</div></div></div>)}
+
+      {ntf&&<div className="tb-notif" style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"rgba(255,248,235,0.97)",borderRadius:14,padding:"10px 22px",boxShadow:"0 8px 30px rgba(0,0,0,0.4)",border:"2px solid #8b7355",fontSize:13,fontWeight:700,color:"#2d3a1e",maxWidth:"88vw",zIndex:50,textAlign:"center",lineHeight:1.6,animation:"slideUp 0.3s ease"}}>{ntf}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
