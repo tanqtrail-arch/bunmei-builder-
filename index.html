@@ -715,7 +715,7 @@ function App(){
             const bg=te?te.color:"#3a3a2e",ad=getAdj(grid,r,c),bn=cell.b&&(ad.includes("river")||ad.includes("sea"));
             return(<div key={`${r}-${c}`}
               onMouseDown={e=>{e.preventDefault();ipR.current=true;clk(r,c);}} onMouseEnter={()=>{if(ipR.current)pnt(r,c);}}
-              onTouchStart={()=>{ipR.current=true;clk(r,c);}} onTouchMove={e=>{if(!ipR.current)return;const t=e.touches[0],el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.dataset.row!==undefined)pnt(+el.dataset.row,+el.dataset.col);}}
+              onTouchStart={e=>{e.preventDefault();ipR.current=true;clk(r,c);}} onTouchMove={e=>{e.preventDefault();if(!ipR.current)return;const t=e.touches[0],el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.dataset.row!==undefined)pnt(+el.dataset.row,+el.dataset.col);}}
               onContextMenu={e=>{e.preventDefault();rmv(r,c);}} data-row={r} data-col={c}
               className="tb-cell" style={{aspectRatio:"1",borderRadius:6,cursor:"pointer",background:bg,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:te?"inset 0 -2px 4px rgba(0,0,0,0.2)":"inset 0 0 0 1px rgba(255,255,255,0.04)",outline:ph==="build"&&cell.t==="plain"&&!cell.b?"2px dashed rgba(255,255,255,0.2)":"none",outlineOffset:-2}}>
               {te&&te.emoji&&!bl&&<span className="tb-cell-emoji" style={{fontSize:18,opacity:0.8,pointerEvents:"none"}}>{te.emoji}</span>}
