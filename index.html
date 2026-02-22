@@ -4,9 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>文明ビルダー - 探究教室TRAIL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://trail-game-pro.onrender.com/sdk/trail-auth.css">
+<script src="https://trail-game-pro.onrender.com/sdk/trail-sdk.js"></script>
+<script src="https://trail-game-pro.onrender.com/sdk/trail-auth.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:#0d1f10;overflow-x:hidden;-webkit-text-size-adjust:100%;}
+body{font-family:'M PLUS Rounded 1c','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:#0d1f10;overflow-x:hidden;-webkit-text-size-adjust:100%;}
 button{font-family:inherit;-webkit-tap-highlight-color:transparent;}
 ::-webkit-scrollbar{height:6px;}::-webkit-scrollbar-track{background:rgba(255,255,255,0.05);border-radius:3px;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:3px;}
 @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
@@ -100,11 +106,65 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;}
 </head>
 <body>
 <div id="root"></div>
+<div id="pinScreen" style="display:flex;position:fixed;inset:0;z-index:9999;background:linear-gradient(170deg,#1a2f1a 0%,#2d4a1f 30%,#0d1f10 100%);align-items:center;justify-content:center;font-family:'M PLUS Rounded 1c',sans-serif;">
+  <div style="text-align:center;color:#fff;">
+    <div style="font-size:48px;margin-bottom:8px;">🏛️</div>
+    <h1 style="font-size:24px;font-weight:900;letter-spacing:4px;margin:0 0 8px;">文明ビルダー</h1>
+    <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0 0 24px;">認証中...</p>
+    <div class="trail-auth-container"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var sdk;
+  try{
+    sdk=TrailSDK({gameId:12,tenantSlug:"trail"});
+  }catch(e){sdk=null;}
+  window.__trailSDK=sdk;
+
+  function hidePin(){
+    var el=document.getElementById("pinScreen");
+    if(el)el.style.display="none";
+  }
+  function showPlayerName(name){
+    var el=document.getElementById("trailPlayerName");
+    if(el)el.textContent=name||"";
+  }
+  var params=new URLSearchParams(window.location.search);
+  var token=params.get("token");
+  if(token){
+    hidePin();
+    if(sdk){
+      try{
+        var name=sdk.getPlayerName();
+        if(name&&name.then){name.then(function(n){window.__trailPlayerName=n||"";}).catch(function(){});}
+        else{window.__trailPlayerName=name||"";}
+      }catch(e){}
+    }
+  }else{
+    if(sdk&&sdk.onAuthSuccess){
+      try{
+        sdk.onAuthSuccess(function(){
+          hidePin();
+          try{
+            var name=sdk.getPlayerName();
+            if(name&&name.then){name.then(function(n){window.__trailPlayerName=n||"";}).catch(function(){});}
+            else{window.__trailPlayerName=name||"";}
+          }catch(e){}
+        });
+      }catch(e){hidePin();}
+    }else{
+      hidePin();
+    }
+  }
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script type="text/babel">
 const {useState,useCallback,useEffect,useRef}=React;
+const trailSDK=window.__trailSDK||null;
 
 // ═══════════ DATA ═══════════
 const DIFF={
@@ -353,6 +413,7 @@ function App(){
   const[showGenesisClear,setShowGenesisClear]=useState(false);
   const[showTutorial,setShowTutorial]=useState(false);
   const advancing=useRef(false);
+  const[playerName,setPlayerName]=useState(window.__trailPlayerName||"");
   // Ranking
   const[rankWeekly,setRankWeekly]=useState([]);
   const[rankAll,setRankAll]=useState([]);
@@ -362,12 +423,17 @@ function App(){
   const[rankRegistered,setRankRegistered]=useState(false);
   const[myRankIdx,setMyRankIdx]=useState(-1);
 
-  // Load rankings on mount
+  // Load rankings + player name on mount
   useEffect(()=>{
     (async()=>{
       const w=await checkWeeklyReset();setRankWeekly(w);
       const a=await loadRanking(RANK_ALL);setRankAll(a);
     })();
+    if(trailSDK){try{
+      const n=trailSDK.getPlayerName();
+      if(n&&n.then){n.then(function(name){if(name){setPlayerName(name);setLineName(name);}}).catch(function(){});}
+      else if(n){setPlayerName(n);setLineName(n);}
+    }catch(e){}}
   },[]);
 
   const nt=useRef(null),ipR=useRef(false);
@@ -411,7 +477,13 @@ function App(){
             const starAlt=getStarAlt(star);
             const isFirst=!clearedDiffs.includes(df);
             const firstAlt=isFirst?5:0;
-            const totalAlt=starAlt+firstAlt;
+            let totalAlt=starAlt+firstAlt;
+            if(trailSDK){try{
+              const result=trailSDK.endSession({score:ts,correct:star,total:3});
+              if(result&&typeof result.alt==="number"){totalAlt=result.alt;}
+              else if(result&&result.then){result.then(function(r){if(r&&typeof r.alt==="number"){setAlt(r.alt);try{trailSDK.showAltPopup(r.alt);}catch(e){}}}).catch(function(){});}
+              if(result&&typeof result.alt==="number"){try{trailSDK.showAltPopup(result.alt);}catch(e){}}
+            }catch(e){}}
             setAlt(a=>a+totalAlt);
             if(isFirst)setClearedDiffs(p=>[...p,df]);
             setResultData({star,starAlt,firstAlt,totalAlt});
@@ -434,7 +506,7 @@ function App(){
   };
   const closeTutorial=()=>{setShowTutorial(false);setPh("build");setShowBrief(true);};
 
-  const go=(d)=>{const c=DIFF[d];setDf(d);setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;setScr("game");};
+  const go=(d)=>{const c=DIFF[d];setDf(d);setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;if(trailSDK){try{trailSDK.startSession();}catch(e){}}setScr("game");};
   const cfm=()=>{const e=calcEnv(grid,[]);const p=cIP(e);setPw(p);setLk(true);setShowBrief(true);};
   const startBuild=()=>{setShowBrief(false);setPh("build");};
   const rst=()=>{const c=DIFF[df];setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;};
@@ -525,22 +597,23 @@ function App(){
       </div>
 
       <div style={{position:"absolute",inset:0,opacity:0.06,pointerEvents:"none"}}>{[...Array(30)].map((_,i)=><span key={i} style={{position:"absolute",left:`${(i*13+7)%100}%`,top:`${(i*19+3)%100}%`,fontSize:24+(i%5)*10,transform:`rotate(${i*12}deg)`}}>{["⛰️","🌊","🌾","🏠","🏯","⛩️","🚉","🌲"][i%8]}</span>)}</div>
-      <div style={{background:"rgba(255,248,235,0.96)",borderRadius:28,padding:"40px 44px",boxShadow:"0 24px 80px rgba(0,0,0,0.5)",textAlign:"center",maxWidth:480,width:"88%",border:"3px solid #8b7355"}}>
+      <div style={{background:"rgba(255,248,235,0.96)",borderRadius:24,padding:"40px 44px",boxShadow:"0 24px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(26,115,232,0.1)",textAlign:"center",maxWidth:480,width:"88%",border:"3px solid #1a73e8"}}>
         <div className="tb-icon-big" style={{fontSize:48,marginBottom:4}}>🏛️</div>
         <h1 className="tb-title" style={{fontSize:30,fontWeight:900,color:"#2d3a1e",margin:"0 0 4px",letterSpacing:6}}>文明ビルダー</h1>
         <p className="tb-sub" style={{fontSize:12,color:"#8b7355",margin:"0 0 6px",fontWeight:700,letterSpacing:2}}>～ 自然とともに文明をそだてよう ～</p>
-        <p className="tb-desc" style={{fontSize:12,color:"#6b5d3e",margin:"0 0 24px",lineHeight:1.8}}>地形をバランスよくおいて<br/>環境をまもりながら文明を発展させよう！</p>
+        <p className="tb-desc" style={{fontSize:12,color:"#6b5d3e",margin:"0 0 16px",lineHeight:1.8}}>地形をバランスよくおいて<br/>環境をまもりながら文明を発展させよう！</p>
+        {playerName&&<div style={{background:"#1a73e8",color:"#fff",borderRadius:12,padding:"8px 16px",marginBottom:16,fontSize:13,fontWeight:700,boxShadow:"0 2px 8px rgba(26,115,232,0.3)"}}>👋 {playerName} さん、ようこそ！</div>}
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {Object.entries(DIFF).map(([k,d])=>(<button key={k} onClick={()=>go(k)} className="tb-diff-btn" style={{padding:"14px 20px",fontSize:15,fontWeight:800,background:`linear-gradient(135deg,${d.color},${d.color}cc)`,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",boxShadow:`0 4px 16px ${d.color}55`,letterSpacing:2,display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}><span className="tb-diff-icon" style={{fontSize:22}}>{d.icon}</span><div style={{textAlign:"left"}}><div>{d.label}</div><div className="tb-diff-sub" style={{fontSize:10,fontWeight:500,opacity:0.85}}>{d.desc}</div></div></button>))}
         </div>
       </div>
 
       {/* RANKING BUTTON */}
-      <button onClick={()=>{setShowRanking(true);setRankTab("weekly");(async()=>{const w=await checkWeeklyReset();setRankWeekly(w);const a=await loadRanking(RANK_ALL);setRankAll(a);})();}} style={{marginTop:16,padding:"14px 32px",fontSize:15,fontWeight:800,background:"linear-gradient(135deg,#ffd740,#ffab00)",color:"#2d3a1e",border:"none",borderRadius:14,cursor:"pointer",boxShadow:"0 4px 16px rgba(255,215,64,0.3)",letterSpacing:2,display:"flex",alignItems:"center",gap:8}}>🏆 ランキング</button>
+      <button onClick={()=>{setShowRanking(true);setRankTab("weekly");(async()=>{const w=await checkWeeklyReset();setRankWeekly(w);const a=await loadRanking(RANK_ALL);setRankAll(a);})();}} style={{marginTop:16,padding:"14px 32px",fontSize:15,fontWeight:800,background:"linear-gradient(135deg,#1a73e8,#1565c0)",color:"#fff",border:"none",borderRadius:12,cursor:"pointer",boxShadow:"0 4px 16px rgba(26,115,232,0.3)",letterSpacing:2,display:"flex",alignItems:"center",gap:8}}>🏆 ランキング</button>
 
       {/* LINE REPORT */}
-      <div className="tb-line-section" style={{marginTop:30,maxWidth:420,width:"88%",background:"rgba(10,10,26,0.9)",borderRadius:18,padding:"20px 24px",border:"1px solid rgba(0,230,118,0.15)"}}>
-        <div className="tb-line-title" style={{fontSize:14,fontWeight:800,color:"#00e676",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>💰 ALTをTRAILに報告する</div>
+      <div className="tb-line-section" style={{marginTop:30,maxWidth:420,width:"88%",background:"rgba(10,10,26,0.9)",borderRadius:12,padding:"20px 24px",border:"1px solid rgba(26,115,232,0.2)",boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
+        <div className="tb-line-title" style={{fontSize:14,fontWeight:800,color:"#1a73e8",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>💰 ALTをTRAILに報告する</div>
         <input value={lineName} onChange={e=>setLineName(e.target.value)} placeholder="なまえを入力" className="tb-line-input" style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"2px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"#fff",fontSize:14,fontWeight:600,marginBottom:10,outline:"none"}}/>
         <button onClick={()=>setShowLineConfirm(true)} disabled={alt===0||!lineName.trim()} className="tb-line-btn" style={{width:"100%",padding:"12px",fontSize:14,fontWeight:800,background:alt>0&&lineName.trim()?"linear-gradient(135deg,#00b900,#009900)":"#333",color:alt>0&&lineName.trim()?"#fff":"#666",border:"none",borderRadius:10,cursor:alt>0&&lineName.trim()?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           💬 LINEで報告する
@@ -587,7 +660,7 @@ function App(){
         </div>
       )}
 
-      <p style={{color:"rgba(255,255,255,0.3)",marginTop:20,fontSize:11}}>探究教室TRAIL × 文明ビルダー</p>
+      <p style={{color:"rgba(255,255,255,0.3)",marginTop:20,fontSize:11}}>探究教室TRAIL × 文明ビルダー ┃ Powered by TRAIL Game Pro</p>
     </div>
   );
 
