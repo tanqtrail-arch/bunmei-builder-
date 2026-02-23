@@ -7,9 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://trail-game-pro.onrender.com/sdk/trail-auth.css">
-<script src="https://trail-game-pro.onrender.com/sdk/trail-sdk.js"></script>
-<script src="https://trail-game-pro.onrender.com/sdk/trail-auth.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'M PLUS Rounded 1c','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:#0d1f10;overflow-x:hidden;-webkit-text-size-adjust:100%;}
@@ -86,10 +83,6 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;}
   .tb-brief-env{font-size:30px!important;}
   .tb-brief-hint{font-size:14px!important;}
   .tb-brief-go{padding:16px!important;font-size:18px!important;border-radius:16px!important;}
-  .tb-line-section{padding:24px 28px!important;border-radius:20px!important;max-width:500px!important;}
-  .tb-line-title{font-size:16px!important;}
-  .tb-line-input{padding:12px 16px!important;font-size:16px!important;border-radius:12px!important;}
-  .tb-line-btn{padding:14px!important;font-size:16px!important;border-radius:12px!important;}
   .tb-result-alt{font-size:38px!important;}
 }
 @media(min-width:1024px){
@@ -106,65 +99,49 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;}
 </head>
 <body>
 <div id="root"></div>
-<div id="pinScreen" style="display:flex;position:fixed;inset:0;z-index:9999;background:linear-gradient(170deg,#1a2f1a 0%,#2d4a1f 30%,#0d1f10 100%);align-items:center;justify-content:center;font-family:'M PLUS Rounded 1c',sans-serif;">
-  <div style="text-align:center;color:#fff;">
-    <div style="font-size:48px;margin-bottom:8px;">🏛️</div>
-    <h1 style="font-size:24px;font-weight:900;letter-spacing:4px;margin:0 0 8px;">文明ビルダー</h1>
-    <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0 0 24px;">認証中...</p>
-    <div class="trail-auth-container"></div>
-  </div>
-</div>
-<script>
-(function(){
-  var sdk;
-  try{
-    sdk=TrailSDK({gameId:12,tenantSlug:"trail"});
-  }catch(e){sdk=null;}
-  window.__trailSDK=sdk;
-
-  function hidePin(){
-    var el=document.getElementById("pinScreen");
-    if(el)el.style.display="none";
-  }
-  function showPlayerName(name){
-    var el=document.getElementById("trailPlayerName");
-    if(el)el.textContent=name||"";
-  }
-  var params=new URLSearchParams(window.location.search);
-  var token=params.get("token");
-  if(token){
-    hidePin();
-    if(sdk){
-      try{
-        var name=sdk.getPlayerName();
-        if(name&&name.then){name.then(function(n){window.__trailPlayerName=n||"";}).catch(function(){});}
-        else{window.__trailPlayerName=name||"";}
-      }catch(e){}
-    }
-  }else{
-    if(sdk&&sdk.onAuthSuccess){
-      try{
-        sdk.onAuthSuccess(function(){
-          hidePin();
-          try{
-            var name=sdk.getPlayerName();
-            if(name&&name.then){name.then(function(n){window.__trailPlayerName=n||"";}).catch(function(){});}
-            else{window.__trailPlayerName=name||"";}
-          }catch(e){}
-        });
-      }catch(e){hidePin();}
-    }else{
-      hidePin();
-    }
-  }
-})();
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script type="text/babel">
 const {useState,useCallback,useEffect,useRef}=React;
-const trailSDK=window.__trailSDK||null;
+
+// ─── TRAIL GP3 連携 ───
+const TRAIL_API = 'https://trail-game-pro-3-2.onrender.com';
+const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
+
+function calcAlt(score) {
+  if (score >= 1000) return 30;
+  if (score >= 500)  return 20;
+  if (score >= 100)  return 10;
+  return 5;
+}
+
+async function sendResultToTrail(score) {
+  if (!TRAIL_PLAYER) return 0;
+  const alt = calcAlt(score);
+  try {
+    await fetch(`${TRAIL_API}/api/external/game-result`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        player: TRAIL_PLAYER,
+        game_id: 'bunmei-builder',
+        game_name: '文明ビルダー',
+        score: score,
+        alt: alt
+      })
+    });
+  } catch (e) {
+    console.error('ALT送信失敗:', e);
+  }
+  return alt;
+}
+
+function goHome() {
+  window.location.href = TRAIL_PLAYER
+    ? 'https://trail-game-pro-3-2.onrender.com'
+    : location.href.split('?')[0];
+}
 
 // ═══════════ DATA ═══════════
 const DIFF={
@@ -408,12 +385,10 @@ function App(){
   const[clearedDiffs,setClearedDiffs]=useState([]);
   const[showResult,setShowResult]=useState(false);
   const[resultData,setResultData]=useState(null);
-  const[lineName,setLineName]=useState("");
-  const[showLineConfirm,setShowLineConfirm]=useState(false);
   const[showGenesisClear,setShowGenesisClear]=useState(false);
   const[showTutorial,setShowTutorial]=useState(false);
   const advancing=useRef(false);
-  const[playerName,setPlayerName]=useState(window.__trailPlayerName||"");
+  const[playerName,setPlayerName]=useState(TRAIL_PLAYER||"");
   // Ranking
   const[rankWeekly,setRankWeekly]=useState([]);
   const[rankAll,setRankAll]=useState([]);
@@ -429,11 +404,6 @@ function App(){
       const w=await checkWeeklyReset();setRankWeekly(w);
       const a=await loadRanking(RANK_ALL);setRankAll(a);
     })();
-    if(trailSDK){try{
-      const n=trailSDK.getPlayerName();
-      if(n&&n.then){n.then(function(name){if(name){setPlayerName(name);setLineName(name);}}).catch(function(){});}
-      else if(n){setPlayerName(n);setLineName(n);}
-    }catch(e){}}
   },[]);
 
   const nt=useRef(null),ipR=useRef(false);
@@ -472,23 +442,19 @@ function App(){
         let pfb=0;for(const p of policies){if(p.effect.powerFlat)pfb+=p.effect.powerFlat;}
         if(pfb>0)setPw(p=>p+pfb);
         if(newEra===MAX_ERA){
-          setTimeout(()=>{
+          setTimeout(async()=>{
             const star=getStarRating(envSc);
             const starAlt=getStarAlt(star);
             const isFirst=!clearedDiffs.includes(df);
             const firstAlt=isFirst?5:0;
             let totalAlt=starAlt+firstAlt;
-            if(trailSDK){try{
-              const result=trailSDK.endSession({score:ts,correct:star,total:3});
-              if(result&&typeof result.alt==="number"){totalAlt=result.alt;}
-              else if(result&&result.then){result.then(function(r){if(r&&typeof r.alt==="number"){setAlt(r.alt);try{trailSDK.showAltPopup(r.alt);}catch(e){}}}).catch(function(){});}
-              if(result&&typeof result.alt==="number"){try{trailSDK.showAltPopup(result.alt);}catch(e){}}
-            }catch(e){}}
+            const trailAlt=await sendResultToTrail(ts);
+            if(trailAlt>0)totalAlt=trailAlt;
             setAlt(a=>a+totalAlt);
             if(isFirst)setClearedDiffs(p=>[...p,df]);
-            setResultData({star,starAlt,firstAlt,totalAlt});
+            setResultData({star,starAlt,firstAlt,totalAlt,trailAlt});
             setRankRegistered(false);setMyRankIdx(-1);
-            if(lineName.trim())setRankName(lineName.trim());
+            if(playerName.trim())setRankName(playerName.trim());
             setShowResult(true);
           },3500);
         }
@@ -506,7 +472,7 @@ function App(){
   };
   const closeTutorial=()=>{setShowTutorial(false);setPh("build");setShowBrief(true);};
 
-  const go=(d)=>{const c=DIFF[d];setDf(d);setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;if(trailSDK){try{trailSDK.startSession();}catch(e){}}setScr("game");};
+  const go=(d)=>{const c=DIFF[d];setDf(d);setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;setScr("game");};
   const cfm=()=>{const e=calcEnv(grid,[]);const p=cIP(e);setPw(p);setLk(true);setShowBrief(true);};
   const startBuild=()=>{setShowBrief(false);setPh("build");};
   const rst=()=>{const c=DIFF[df];setGrid(mkG(c.rows,c.cols));setEra(0);setPw(0);setCld([]);setPh("terrain");setLk(false);setSB(null);setNtf(null);setHE(false);setLU(null);setPolicies([]);setShowPolicy(null);setShowTrade(false);setShowBrief(false);setShowGenesisClear(false);setShowTutorial(false);setShowResult(false);setResultData(null);setRankRegistered(false);setMyRankIdx(-1);setRankName("");advancing.current=false;};
@@ -563,13 +529,6 @@ function App(){
     setShowPolicy(null);
   };
 
-  // LINE
-  const sendLine=()=>{
-    const msg=`【文明ビルダー ALT報告】\n名前: ${lineName}\n💰 ${alt}ALT\n${ERAS[era].name}到達 / 人口${st.pop} / 環境${envSc} / 総合${ts}`;
-    const url=`https://line.me/R/oaMessage/@trail_official/?${encodeURIComponent(msg)}`;
-    window.open(url,"_blank");setAlt(0);setShowLineConfirm(false);sn("📤 LINEで報告しました！");
-  };
-
   const registerRank=async()=>{
     if(!rankName.trim()||!resultData)return;
     const entry={name:rankName.trim(),score:ts,env:envSc,star:resultData.star,diff:df,eraIcon:ERAS[era].icon,time:Date.now()};
@@ -611,15 +570,6 @@ function App(){
       {/* RANKING BUTTON */}
       <button onClick={()=>{setShowRanking(true);setRankTab("weekly");(async()=>{const w=await checkWeeklyReset();setRankWeekly(w);const a=await loadRanking(RANK_ALL);setRankAll(a);})();}} style={{marginTop:16,padding:"14px 32px",fontSize:15,fontWeight:800,background:"linear-gradient(135deg,#1a73e8,#1565c0)",color:"#fff",border:"none",borderRadius:12,cursor:"pointer",boxShadow:"0 4px 16px rgba(26,115,232,0.3)",letterSpacing:2,display:"flex",alignItems:"center",gap:8}}>🏆 ランキング</button>
 
-      {/* LINE REPORT */}
-      <div className="tb-line-section" style={{marginTop:30,maxWidth:420,width:"88%",background:"rgba(10,10,26,0.9)",borderRadius:12,padding:"20px 24px",border:"1px solid rgba(26,115,232,0.2)",boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
-        <div className="tb-line-title" style={{fontSize:14,fontWeight:800,color:"#1a73e8",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>💰 ALTをTRAILに報告する</div>
-        <input value={lineName} onChange={e=>setLineName(e.target.value)} placeholder="なまえを入力" className="tb-line-input" style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"2px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",color:"#fff",fontSize:14,fontWeight:600,marginBottom:10,outline:"none"}}/>
-        <button onClick={()=>setShowLineConfirm(true)} disabled={alt===0||!lineName.trim()} className="tb-line-btn" style={{width:"100%",padding:"12px",fontSize:14,fontWeight:800,background:alt>0&&lineName.trim()?"linear-gradient(135deg,#00b900,#009900)":"#333",color:alt>0&&lineName.trim()?"#fff":"#666",border:"none",borderRadius:10,cursor:alt>0&&lineName.trim()?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-          💬 LINEで報告する
-        </button>
-        {alt===0&&<div style={{fontSize:10,color:"rgba(255,255,255,0.3)",textAlign:"center",marginTop:6}}>ALTを獲得するとボタンが押せるよ</div>}
-      </div>
 
       {/* ═══ RANKING SCREEN ═══ */}
       {showRanking&&(
@@ -645,20 +595,6 @@ function App(){
         </div>
       )}
 
-      {/* LINE confirm modal */}
-      {showLineConfirm&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:16}} onClick={()=>setShowLineConfirm(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"#1a1a2e",borderRadius:20,padding:28,maxWidth:340,width:"100%",border:"2px solid #00e67640",textAlign:"center"}}>
-            <div style={{fontSize:40,marginBottom:8}}>⚠️</div>
-            <div style={{fontSize:16,fontWeight:800,color:"#fff",marginBottom:4}}>{alt}ALTを報告してリセットします</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginBottom:16}}>報告するとALTが0にもどります</div>
-            <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setShowLineConfirm(false)} style={{flex:1,padding:10,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#ccc",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>やめる</button>
-              <button onClick={sendLine} style={{flex:1,padding:10,background:"linear-gradient(135deg,#00b900,#009900)",border:"none",color:"#fff",borderRadius:10,fontSize:13,fontWeight:800,cursor:"pointer"}}>OK！送る</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <p style={{color:"rgba(255,255,255,0.3)",marginTop:20,fontSize:11}}>探究教室TRAIL × 文明ビルダー ┃ Powered by TRAIL Game Pro</p>
     </div>
@@ -888,7 +824,7 @@ function App(){
 
       {/* ═══ RESULT ═══ */}
       {showResult&&resultData&&(()=>{
-        const{star,starAlt,firstAlt,totalAlt}=resultData;
+        const{star,starAlt,firstAlt,totalAlt,trailAlt}=resultData;
         return(
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:16}}>
             <div style={{background:"linear-gradient(170deg,#1a1a2e,#16213e)",borderRadius:24,padding:32,maxWidth:420,width:"100%",border:"2px solid #00e67640",boxShadow:"0 20px 60px rgba(0,0,0,0.8)",textAlign:"center",animation:"popIn 0.3s ease"}}>
@@ -947,9 +883,18 @@ function App(){
                 </div>
               )}
 
-              <div style={{display:"flex",gap:8}}>
-                <button onClick={()=>{setShowResult(false);rst();}} style={{flex:1,padding:10,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#ccc",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>🔄 もう一回</button>
-                <button onClick={()=>{setShowResult(false);setScr("title");}} style={{flex:1,padding:10,background:"linear-gradient(135deg,#00e676,#00c853)",border:"none",color:"#1a1a2e",borderRadius:10,fontSize:13,fontWeight:800,cursor:"pointer"}}>🏠 タイトルへ</button>
+              {TRAIL_PLAYER&&trailAlt>0&&(
+                <div style={{background:"rgba(0,230,118,0.12)",borderRadius:12,padding:"12px 16px",marginBottom:12,border:"1px solid rgba(0,230,118,0.25)",textAlign:"center"}}>
+                  <span style={{fontSize:15,fontWeight:800,color:"#69f0ae"}}>🪙 {trailAlt} ALT を獲得！</span>
+                </div>
+              )}
+
+              <div style={{display:"flex",gap:8,flexDirection:"column"}}>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>{setShowResult(false);rst();}} style={{flex:1,padding:10,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#ccc",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>🔄 もう一回</button>
+                  <button onClick={()=>{setShowResult(false);setScr("title");}} style={{flex:1,padding:10,background:"linear-gradient(135deg,#00e676,#00c853)",border:"none",color:"#1a1a2e",borderRadius:10,fontSize:13,fontWeight:800,cursor:"pointer"}}>🏠 タイトルへ</button>
+                </div>
+                <button onClick={goHome} style={{width:"100%",padding:10,background:"linear-gradient(135deg,#5ba4cf,#1565c0)",border:"none",color:"#fff",borderRadius:10,fontSize:13,fontWeight:800,cursor:"pointer"}}>🏠 ホームに戻る</button>
               </div>
             </div>
           </div>
