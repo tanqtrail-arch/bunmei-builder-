@@ -109,16 +109,8 @@ const {useState,useCallback,useEffect,useRef}=React;
 const TRAIL_API = 'https://trail-game-pro-3-2.onrender.com';
 const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
 
-function calcAlt(score) {
-  if (score >= 1000) return 30;
-  if (score >= 500)  return 20;
-  if (score >= 100)  return 10;
-  return 5;
-}
-
-async function sendResultToTrail(score) {
+async function sendResultToTrail(score, alt) {
   if (!TRAIL_PLAYER) return 0;
-  const alt = calcAlt(score);
   try {
     await fetch(`${TRAIL_API}/api/external/game-result`, {
       method: 'POST',
@@ -448,7 +440,7 @@ function App(){
             const isFirst=!clearedDiffs.includes(df);
             const firstAlt=isFirst?5:0;
             let totalAlt=starAlt+firstAlt;
-            const trailAlt=await sendResultToTrail(ts);
+            const trailAlt=await sendResultToTrail(ts,totalAlt);
             if(trailAlt>0)totalAlt=trailAlt;
             setAlt(a=>a+totalAlt);
             if(isFirst)setClearedDiffs(p=>[...p,df]);
