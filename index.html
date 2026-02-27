@@ -1000,5 +1000,16 @@ function App(){
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
+<!-- ===== 🆕 TRAIL共通ナビ ===== -->
+<script src="trail-nav.js"></script>
+<script>
+TrailNav.init({
+  gameName: '文明ビルダー',
+  gameEmoji: '🏛️',
+  gameHomeId: 'root',
+  tgp32Url: 'https://trail-game-pro-3-2.onrender.com',
+  apiBase: 'https://trail-game-pro-3-2.onrender.com/api',
+});
+</script>
 </body>
 </html>
