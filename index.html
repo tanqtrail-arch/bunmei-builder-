@@ -110,30 +110,11 @@ const TRAIL_API = 'https://trail-game-pro-3-2.onrender.com';
 const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
 
 async function sendResultToTrail(score, alt) {
-  if (!TRAIL_PLAYER) return 0;
-  try {
-    await fetch(`${TRAIL_API}/api/external/game-result`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        player: TRAIL_PLAYER,
-        game_id: 'bunmei-builder',
-        game_name: '文明ビルダー',
-        score: score,
-        alt: alt
-      })
-    });
-  } catch (e) {
-    console.error('ALT送信失敗:', e);
-  }
+  DarwinBridge.stageClear({score: score, correct: score > 0 ? 1 : 0, total: 1});
   return alt;
 }
 
-function goHome() {
-  window.location.href = TRAIL_PLAYER
-    ? 'https://trail-game-pro-3-2.onrender.com'
-    : location.href.split('?')[0];
-}
+function goHome() { DarwinBridge.exit(); }
 
 // ═══════════ DATA ═══════════
 const DIFF={
@@ -1000,16 +981,7 @@ function App(){
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
-<!-- ===== 🆕 TRAIL共通ナビ ===== -->
 <script src="trail-nav.js"></script>
-<script>
-TrailNav.init({
-  gameName: '文明ビルダー',
-  gameEmoji: '🏛️',
-  gameHomeId: 'root',
-  tgp32Url: 'https://trail-game-pro-3-2.onrender.com',
-  apiBase: 'https://trail-game-pro-3-2.onrender.com/api',
-});
-</script>
+<script>DarwinBridge.ready();</script>
 </body>
 </html>
